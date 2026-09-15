@@ -3,7 +3,7 @@ import booksImg from '../assets/livros.png'
 
 export function HeroIllustration() {
   return (
-    <div className="relative flex flex-col items-center justify-end px-4">
+    <div className="relative hidden flex-col items-center justify-end px-4 lg:flex">
       <img
         src={studentsImg}
         alt="Dois estudantes do colégio usando laptop e tablet"

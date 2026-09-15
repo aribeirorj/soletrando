@@ -1,6 +1,13 @@
 import { create } from 'zustand'
 import { getWordsByDifficulty } from '../data/words'
+import { getSpeakAndSpellWords } from '../data/speakAndSpellCategories'
 import type { Difficulty, GameMode, GameStatus, Word } from '../types'
+
+const SPEAK_AND_SPELL_DIFFICULTY: Difficulty = 'dificil'
+
+function getWordPool(mode: GameMode, difficulty: Difficulty, category: string | null): Word[] {
+  return mode === 'falar-soletrar' ? getSpeakAndSpellWords(category) : getWordsByDifficulty(difficulty)
+}
 
 export function pickNextRandomWord(pool: Word[], previous: Word | null): Word {
   if (pool.length <= 1) {
@@ -28,6 +35,8 @@ export function computeRoundScore(difficulty: Difficulty, usedHint: boolean): nu
   const base = BASE_SCORE_BY_DIFFICULTY[difficulty]
   return usedHint ? Math.round(base / 2) : base
 }
+
+export const SPEAK_AND_SPELL_POINTS_PER_LETTER = 10
 
 export function computeNextStreak(currentStreak: number, wasCorrect: boolean): number {
   return wasCorrect ? currentStreak + 1 : 0
@@ -74,9 +83,23 @@ function savePlayerName(value: string): void {
   }
 }
 
+function applyScoreDelta(
+  currentScore: number,
+  currentHighScore: number,
+  delta: number,
+): { score: number; highScore: number } {
+  const score = currentScore + delta
+  const highScore = score > currentHighScore ? score : currentHighScore
+  if (highScore > currentHighScore) {
+    saveHighScore(highScore)
+  }
+  return { score, highScore }
+}
+
 interface GameState {
   mode: GameMode | null
   difficulty: Difficulty | null
+  category: string | null
   currentWord: Word | null
   status: GameStatus
   score: number
@@ -86,9 +109,19 @@ interface GameState {
   playerName: string
   roundLength: number | null
   questionsAnsweredInRound: number
+  correctCount: number
+  wrongCount: number
 
-  startGame: (mode: GameMode, difficulty: Difficulty, roundLength?: number) => void
+  startGame: (
+    mode: GameMode,
+    difficulty: Difficulty,
+    roundLength?: number,
+    category?: string | null,
+  ) => void
   submitAnswer: (answer: string) => boolean
+  awardPoints: (points: number) => void
+  recordLetterResult: (wasCorrect: boolean) => void
+  completeSpellingWord: (wasCorrect: boolean) => void
   useHint: () => void
   handleTimeout: () => void
   pickNextWord: () => void
@@ -99,6 +132,7 @@ interface GameState {
 export const useGameStore = create<GameState>((set, get) => ({
   mode: null,
   difficulty: null,
+  category: null,
   currentWord: null,
   status: 'jogando',
   score: 0,
@@ -108,12 +142,16 @@ export const useGameStore = create<GameState>((set, get) => ({
   playerName: loadPlayerName(),
   roundLength: null,
   questionsAnsweredInRound: 0,
+  correctCount: 0,
+  wrongCount: 0,
 
-  startGame: (mode, difficulty, roundLength) => {
-    const word = pickNextRandomWord(getWordsByDifficulty(difficulty), null)
+  startGame: (mode, difficulty, roundLength, category = null) => {
+    const effectiveDifficulty = mode === 'falar-soletrar' ? SPEAK_AND_SPELL_DIFFICULTY : difficulty
+    const word = pickNextRandomWord(getWordPool(mode, effectiveDifficulty, category), null)
     set({
       mode,
-      difficulty,
+      difficulty: effectiveDifficulty,
+      category,
       currentWord: word,
       status: 'jogando',
       score: 0,
@@ -121,11 +159,24 @@ export const useGameStore = create<GameState>((set, get) => ({
       hintUsedThisRound: false,
       roundLength: roundLength ?? null,
       questionsAnsweredInRound: 0,
+      correctCount: 0,
+      wrongCount: 0,
     })
   },
 
   submitAnswer: (answer) => {
-    const { status, currentWord, difficulty, hintUsedThisRound, score, streak, highScore, questionsAnsweredInRound } = get()
+    const {
+      status,
+      currentWord,
+      difficulty,
+      hintUsedThisRound,
+      score,
+      streak,
+      highScore,
+      questionsAnsweredInRound,
+      correctCount,
+      wrongCount,
+    } = get()
     if (status !== 'jogando' || !currentWord || !difficulty) {
       return false
     }
@@ -133,27 +184,54 @@ export const useGameStore = create<GameState>((set, get) => ({
     const correct = isAnswerCorrect(answer, currentWord.text)
 
     if (correct) {
-      const newScore = score + computeRoundScore(difficulty, hintUsedThisRound)
-      const newHighScore = newScore > highScore ? newScore : highScore
-      if (newHighScore > highScore) {
-        saveHighScore(newHighScore)
-      }
+      const { score: newScore, highScore: newHighScore } = applyScoreDelta(
+        score,
+        highScore,
+        computeRoundScore(difficulty, hintUsedThisRound),
+      )
       set({
         status: 'acertou',
         score: newScore,
         streak: computeNextStreak(streak, true),
         highScore: newHighScore,
         questionsAnsweredInRound: questionsAnsweredInRound + 1,
+        correctCount: correctCount + 1,
       })
     } else {
       set({
         status: 'errou',
         streak: computeNextStreak(streak, false),
         questionsAnsweredInRound: questionsAnsweredInRound + 1,
+        wrongCount: wrongCount + 1,
       })
     }
 
     return correct
+  },
+
+  awardPoints: (points) => {
+    const { status, score, highScore } = get()
+    if (status !== 'jogando') return
+    const { score: newScore, highScore: newHighScore } = applyScoreDelta(score, highScore, points)
+    set({ score: newScore, highScore: newHighScore })
+  },
+
+  recordLetterResult: (wasCorrect) => {
+    const { status, correctCount, wrongCount } = get()
+    if (status !== 'jogando') return
+    set(
+      wasCorrect ? { correctCount: correctCount + 1 } : { wrongCount: wrongCount + 1 },
+    )
+  },
+
+  completeSpellingWord: (wasCorrect) => {
+    const { status, streak, questionsAnsweredInRound } = get()
+    if (status !== 'jogando') return
+    set({
+      status: wasCorrect ? 'acertou' : 'errou',
+      streak: computeNextStreak(streak, wasCorrect),
+      questionsAnsweredInRound: questionsAnsweredInRound + 1,
+    })
   },
 
   useHint: () => {
@@ -163,21 +241,22 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   handleTimeout: () => {
-    const { status, questionsAnsweredInRound } = get()
+    const { status, questionsAnsweredInRound, wrongCount } = get()
     if (status === 'jogando') {
       set({
         status: 'tempo-esgotado',
         streak: 0,
         questionsAnsweredInRound: questionsAnsweredInRound + 1,
+        wrongCount: wrongCount + 1,
       })
     }
   },
 
   pickNextWord: () => {
-    const { difficulty, currentWord, roundLength, questionsAnsweredInRound } = get()
-    if (!difficulty) return
+    const { mode, difficulty, category, currentWord, roundLength, questionsAnsweredInRound } = get()
+    if (!mode || !difficulty) return
     if (roundLength !== null && questionsAnsweredInRound >= roundLength) return
-    const word = pickNextRandomWord(getWordsByDifficulty(difficulty), currentWord)
+    const word = pickNextRandomWord(getWordPool(mode, difficulty, category), currentWord)
     set({ currentWord: word, status: 'jogando', hintUsedThisRound: false })
   },
 
@@ -185,6 +264,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     set({
       mode: null,
       difficulty: null,
+      category: null,
       currentWord: null,
       status: 'jogando',
       score: 0,
@@ -192,6 +272,8 @@ export const useGameStore = create<GameState>((set, get) => ({
       hintUsedThisRound: false,
       roundLength: null,
       questionsAnsweredInRound: 0,
+      correctCount: 0,
+      wrongCount: 0,
     })
   },
 

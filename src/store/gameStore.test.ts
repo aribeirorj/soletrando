@@ -4,6 +4,7 @@ import {
   computeRoundScore,
   isAnswerCorrect,
   pickNextRandomWord,
+  SPEAK_AND_SPELL_POINTS_PER_LETTER,
   useGameStore,
 } from './gameStore'
 import type { Word } from '../types'
@@ -75,6 +76,7 @@ describe('useGameStore', () => {
     useGameStore.setState({
       mode: null,
       difficulty: null,
+      category: null,
       currentWord: null,
       status: 'jogando',
       score: 0,
@@ -84,6 +86,8 @@ describe('useGameStore', () => {
       playerName: '',
       roundLength: null,
       questionsAnsweredInRound: 0,
+      correctCount: 0,
+      wrongCount: 0,
     })
   })
 
@@ -276,5 +280,161 @@ describe('useGameStore', () => {
     const state = useGameStore.getState()
     expect(state.roundLength).toBeNull()
     expect(state.questionsAnsweredInRound).toBe(0)
+  })
+
+  test('startGame in falar-soletrar mode picks a word from the chosen category with dificil difficulty', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+
+    const state = useGameStore.getState()
+    expect(state.category).toBe('colors')
+    expect(state.difficulty).toBe('dificil')
+    expect(state.currentWord?.difficulty).toBe('dificil')
+    expect(['black', 'blue', 'brown', 'grey', 'green', 'orange', 'pink', 'purple', 'red', 'violet', 'white', 'yellow']).toContain(
+      state.currentWord?.text,
+    )
+  })
+
+  test('pickNextWord in falar-soletrar mode stays within the chosen category', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'seasons')
+    const first = useGameStore.getState().currentWord!
+    useGameStore.getState().submitAnswer(first.text)
+
+    useGameStore.getState().pickNextWord()
+
+    const state = useGameStore.getState()
+    expect(['spring', 'summer', 'fall', 'autumn', 'winter']).toContain(state.currentWord?.text)
+  })
+
+  test('awardPoints adds the given points to the score', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+
+    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+
+    expect(useGameStore.getState().score).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER * 2)
+  })
+
+  test('awardPoints updates the high score when the new score is higher', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+
+    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+
+    expect(useGameStore.getState().highScore).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    expect(localStorage.getItem('soletrando:highScore')).toBe(String(SPEAK_AND_SPELL_POINTS_PER_LETTER))
+  })
+
+  test('awardPoints does nothing once the round has already ended', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+    useGameStore.getState().completeSpellingWord(true)
+
+    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+
+    expect(useGameStore.getState().score).toBe(0)
+  })
+
+  test('completeSpellingWord(true) marks the round as correct and increments the streak without touching the score or letter counts', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    useGameStore.getState().recordLetterResult(true)
+
+    useGameStore.getState().completeSpellingWord(true)
+
+    const state = useGameStore.getState()
+    expect(state.status).toBe('acertou')
+    expect(state.streak).toBe(1)
+    expect(state.score).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    expect(state.questionsAnsweredInRound).toBe(1)
+    expect(state.correctCount).toBe(1)
+    expect(state.wrongCount).toBe(0)
+  })
+
+  test('completeSpellingWord(false) marks the round as wrong and resets the streak without touching the score or letter counts', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+    useGameStore.setState({ streak: 3 })
+    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    useGameStore.getState().recordLetterResult(true)
+    useGameStore.getState().recordLetterResult(false)
+
+    useGameStore.getState().completeSpellingWord(false)
+
+    const state = useGameStore.getState()
+    expect(state.status).toBe('errou')
+    expect(state.streak).toBe(0)
+    expect(state.score).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    expect(state.questionsAnsweredInRound).toBe(1)
+    expect(state.correctCount).toBe(1)
+    expect(state.wrongCount).toBe(1)
+  })
+
+  test('recordLetterResult(true) increments the correct count', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+
+    useGameStore.getState().recordLetterResult(true)
+    useGameStore.getState().recordLetterResult(true)
+
+    const state = useGameStore.getState()
+    expect(state.correctCount).toBe(2)
+    expect(state.wrongCount).toBe(0)
+  })
+
+  test('recordLetterResult(false) increments the wrong count', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+
+    useGameStore.getState().recordLetterResult(false)
+
+    const state = useGameStore.getState()
+    expect(state.correctCount).toBe(0)
+    expect(state.wrongCount).toBe(1)
+  })
+
+  test('recordLetterResult does nothing once the round has already ended', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+    useGameStore.getState().completeSpellingWord(true)
+
+    useGameStore.getState().recordLetterResult(true)
+
+    expect(useGameStore.getState().correctCount).toBe(0)
+  })
+
+  test('submitAnswer with a correct answer increments the correct count', () => {
+    useGameStore.getState().startGame('ouvir-digitar', 'facil')
+    const word = useGameStore.getState().currentWord!
+
+    useGameStore.getState().submitAnswer(word.text)
+
+    const state = useGameStore.getState()
+    expect(state.correctCount).toBe(1)
+    expect(state.wrongCount).toBe(0)
+  })
+
+  test('submitAnswer with a wrong answer increments the wrong count', () => {
+    useGameStore.getState().startGame('ouvir-digitar', 'facil')
+
+    useGameStore.getState().submitAnswer('not-a-real-word')
+
+    const state = useGameStore.getState()
+    expect(state.correctCount).toBe(0)
+    expect(state.wrongCount).toBe(1)
+  })
+
+  test('handleTimeout increments the wrong count', () => {
+    useGameStore.getState().startGame('ouvir-digitar', 'facil')
+
+    useGameStore.getState().handleTimeout()
+
+    const state = useGameStore.getState()
+    expect(state.correctCount).toBe(0)
+    expect(state.wrongCount).toBe(1)
+  })
+
+  test('startGame resets the correct and wrong counts', () => {
+    useGameStore.getState().startGame('ouvir-digitar', 'facil')
+    useGameStore.setState({ correctCount: 4, wrongCount: 2 })
+
+    useGameStore.getState().startGame('ouvir-digitar', 'facil')
+
+    const state = useGameStore.getState()
+    expect(state.correctCount).toBe(0)
+    expect(state.wrongCount).toBe(0)
   })
 })

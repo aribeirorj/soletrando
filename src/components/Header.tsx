@@ -1,4 +1,4 @@
-import schoolCrest from '../assets/brasao.png'
+import schoolCrest from '../assets/logo-branca.png'
 
 export function Header() {
   return (
@@ -12,7 +12,7 @@ export function Header() {
         />
         <div className="min-w-0">
           <h1 className="truncate text-lg font-bold leading-tight sm:text-2xl">
-            Colégio Municipal Clério Boechat
+            Escola Municipal Clério Boechat
           </h1>
           <p className="truncate text-xs text-white/80 sm:text-sm">
             Educação hoje, um futuro melhor amanhã!

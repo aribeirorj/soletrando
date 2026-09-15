@@ -57,6 +57,16 @@ export function CheckCircleIcon(props: SVGProps<SVGSVGElement>) {
   )
 }
 
+export function XCircleIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path d="m9.5 9.5 5 5" />
+      <path d="m14.5 9.5-5 5" />
+    </Icon>
+  )
+}
+
 export function MicrophoneIcon(props: SVGProps<SVGSVGElement>) {
   return (
     <Icon {...props}>
@@ -86,6 +96,17 @@ export function UserIcon(props: SVGProps<SVGSVGElement>) {
     <Icon {...props}>
       <circle cx="12" cy="8" r="4" />
       <path d="M4 21c0-4 4-6 8-6s8 2 8 6" />
+    </Icon>
+  )
+}
+
+export function UsersIcon(props: SVGProps<SVGSVGElement>) {
+  return (
+    <Icon {...props}>
+      <circle cx="9" cy="8" r="3.5" />
+      <path d="M2.5 21c0-3.5 3-5.5 6.5-5.5s6.5 2 6.5 5.5" />
+      <path d="M16 8.5a3 3 0 1 0 0-6" />
+      <path d="M15 15.5c3 0 6.5 1.7 6.5 5.5" />
     </Icon>
   )
 }

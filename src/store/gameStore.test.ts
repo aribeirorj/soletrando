@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   computeNextStreak,
   computeRoundScore,
+  computeSpellingWordScore,
   isAnswerCorrect,
   pickNextRandomWord,
   SPEAK_AND_SPELL_POINTS_PER_LETTER,
@@ -57,6 +58,16 @@ describe('computeRoundScore', () => {
     expect(computeRoundScore('facil', true)).toBe(5)
     expect(computeRoundScore('medio', true)).toBe(10)
     expect(computeRoundScore('dificil', true)).toBe(15)
+  })
+})
+
+describe('computeSpellingWordScore', () => {
+  test('multiplies the letter count by the points per letter', () => {
+    expect(computeSpellingWordScore('cat')).toBe(3 * SPEAK_AND_SPELL_POINTS_PER_LETTER)
+  })
+
+  test('does not count spaces in compound words', () => {
+    expect(computeSpellingWordScore('living room')).toBe(10 * SPEAK_AND_SPELL_POINTS_PER_LETTER)
   })
 })
 
@@ -283,10 +294,10 @@ describe('useGameStore', () => {
   })
 
   test('startGame in falar-soletrar mode picks a word from the chosen category with dificil difficulty', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
 
     const state = useGameStore.getState()
-    expect(state.category).toBe('colors')
+    expect(state.category).toEqual(['colors'])
     expect(state.difficulty).toBe('dificil')
     expect(state.currentWord?.difficulty).toBe('dificil')
     expect(['black', 'blue', 'brown', 'grey', 'green', 'orange', 'pink', 'purple', 'red', 'violet', 'white', 'yellow']).toContain(
@@ -294,8 +305,18 @@ describe('useGameStore', () => {
     )
   })
 
-  test('pickNextWord in falar-soletrar mode stays within the chosen category', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'seasons')
+  test('startGame in falar-soletrar mode combines words from every chosen category', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors', 'seasons'])
+
+    const state = useGameStore.getState()
+    expect([
+      'black', 'blue', 'brown', 'grey', 'green', 'orange', 'pink', 'purple',
+      'red', 'violet', 'white', 'yellow', 'spring', 'summer', 'fall', 'autumn', 'winter',
+    ]).toContain(state.currentWord?.text)
+  })
+
+  test('pickNextWord in falar-soletrar mode stays within the chosen categories', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['seasons'])
     const first = useGameStore.getState().currentWord!
     useGameStore.getState().submitAnswer(first.text)
 
@@ -305,95 +326,59 @@ describe('useGameStore', () => {
     expect(['spring', 'summer', 'fall', 'autumn', 'winter']).toContain(state.currentWord?.text)
   })
 
-  test('awardPoints adds the given points to the score', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
-
-    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-
-    expect(useGameStore.getState().score).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER * 2)
-  })
-
-  test('awardPoints updates the high score when the new score is higher', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
-
-    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-
-    expect(useGameStore.getState().highScore).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-    expect(localStorage.getItem('soletrando:highScore')).toBe(String(SPEAK_AND_SPELL_POINTS_PER_LETTER))
-  })
-
-  test('awardPoints does nothing once the round has already ended', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
-    useGameStore.getState().completeSpellingWord(true)
-
-    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-
-    expect(useGameStore.getState().score).toBe(0)
-  })
-
-  test('completeSpellingWord(true) marks the round as correct and increments the streak without touching the score or letter counts', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
-    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-    useGameStore.getState().recordLetterResult(true)
+  test('completeSpellingWord(true) awards points based on the word length and increments the streak and correct count', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
+    const word = useGameStore.getState().currentWord!
+    const letterCount = word.text.replace(/ /g, '').length
 
     useGameStore.getState().completeSpellingWord(true)
 
     const state = useGameStore.getState()
     expect(state.status).toBe('acertou')
     expect(state.streak).toBe(1)
-    expect(state.score).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    expect(state.score).toBe(letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER)
     expect(state.questionsAnsweredInRound).toBe(1)
     expect(state.correctCount).toBe(1)
     expect(state.wrongCount).toBe(0)
   })
 
-  test('completeSpellingWord(false) marks the round as wrong and resets the streak without touching the score or letter counts', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+  test('completeSpellingWord(false) awards no points, resets the streak and increments the wrong count', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
     useGameStore.setState({ streak: 3 })
-    useGameStore.getState().awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-    useGameStore.getState().recordLetterResult(true)
-    useGameStore.getState().recordLetterResult(false)
 
     useGameStore.getState().completeSpellingWord(false)
 
     const state = useGameStore.getState()
     expect(state.status).toBe('errou')
     expect(state.streak).toBe(0)
-    expect(state.score).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    expect(state.score).toBe(0)
     expect(state.questionsAnsweredInRound).toBe(1)
-    expect(state.correctCount).toBe(1)
-    expect(state.wrongCount).toBe(1)
-  })
-
-  test('recordLetterResult(true) increments the correct count', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
-
-    useGameStore.getState().recordLetterResult(true)
-    useGameStore.getState().recordLetterResult(true)
-
-    const state = useGameStore.getState()
-    expect(state.correctCount).toBe(2)
-    expect(state.wrongCount).toBe(0)
-  })
-
-  test('recordLetterResult(false) increments the wrong count', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
-
-    useGameStore.getState().recordLetterResult(false)
-
-    const state = useGameStore.getState()
     expect(state.correctCount).toBe(0)
     expect(state.wrongCount).toBe(1)
   })
 
-  test('recordLetterResult does nothing once the round has already ended', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, 'colors')
+  test('completeSpellingWord(true) updates the high score when the word score surpasses it', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
+    const word = useGameStore.getState().currentWord!
+    const letterCount = word.text.replace(/ /g, '').length
+
     useGameStore.getState().completeSpellingWord(true)
 
-    useGameStore.getState().recordLetterResult(true)
+    const expectedScore = letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER
+    expect(useGameStore.getState().highScore).toBe(expectedScore)
+    expect(localStorage.getItem('soletrando:highScore')).toBe(String(expectedScore))
+  })
 
-    expect(useGameStore.getState().correctCount).toBe(0)
+  test('completeSpellingWord does nothing once the round has already ended', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
+    useGameStore.getState().completeSpellingWord(true)
+    const scoreAfterFirstCompletion = useGameStore.getState().score
+
+    useGameStore.getState().completeSpellingWord(true)
+
+    const state = useGameStore.getState()
+    expect(state.score).toBe(scoreAfterFirstCompletion)
+    expect(state.questionsAnsweredInRound).toBe(1)
   })
 
   test('submitAnswer with a correct answer increments the correct count', () => {

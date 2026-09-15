@@ -92,8 +92,10 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
 
 const SPEAK_AND_SPELL_DIFFICULTY = 'dificil' as const
 
-export function getSpeakAndSpellWords(categoryId: string | null): Word[] {
-  const category = SPEAK_AND_SPELL_CATEGORIES.find((c) => c.id === categoryId)
-  if (!category) return []
-  return category.words.map((text) => ({ text, difficulty: SPEAK_AND_SPELL_DIFFICULTY }))
+export function getSpeakAndSpellWords(categoryIds: string[] | null): Word[] {
+  if (!categoryIds) return []
+  const categories = SPEAK_AND_SPELL_CATEGORIES.filter((c) => categoryIds.includes(c.id))
+  return categories.flatMap((category) =>
+    category.words.map((text) => ({ text, difficulty: SPEAK_AND_SPELL_DIFFICULTY })),
+  )
 }

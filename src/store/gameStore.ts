@@ -5,7 +5,7 @@ import type { Difficulty, GameMode, GameStatus, Word } from '../types'
 
 const SPEAK_AND_SPELL_DIFFICULTY: Difficulty = 'dificil'
 
-function getWordPool(mode: GameMode, difficulty: Difficulty, category: string | null): Word[] {
+function getWordPool(mode: GameMode, difficulty: Difficulty, category: string[] | null): Word[] {
   return mode === 'falar-soletrar' ? getSpeakAndSpellWords(category) : getWordsByDifficulty(difficulty)
 }
 
@@ -37,6 +37,11 @@ export function computeRoundScore(difficulty: Difficulty, usedHint: boolean): nu
 }
 
 export const SPEAK_AND_SPELL_POINTS_PER_LETTER = 10
+
+export function computeSpellingWordScore(wordText: string): number {
+  const letterCount = wordText.replace(/ /g, '').length
+  return letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER
+}
 
 export function computeNextStreak(currentStreak: number, wasCorrect: boolean): number {
   return wasCorrect ? currentStreak + 1 : 0
@@ -99,7 +104,7 @@ function applyScoreDelta(
 interface GameState {
   mode: GameMode | null
   difficulty: Difficulty | null
-  category: string | null
+  category: string[] | null
   currentWord: Word | null
   status: GameStatus
   score: number
@@ -116,11 +121,9 @@ interface GameState {
     mode: GameMode,
     difficulty: Difficulty,
     roundLength?: number,
-    category?: string | null,
+    category?: string[] | null,
   ) => void
   submitAnswer: (answer: string) => boolean
-  awardPoints: (points: number) => void
-  recordLetterResult: (wasCorrect: boolean) => void
   completeSpellingWord: (wasCorrect: boolean) => void
   useHint: () => void
   handleTimeout: () => void
@@ -209,28 +212,19 @@ export const useGameStore = create<GameState>((set, get) => ({
     return correct
   },
 
-  awardPoints: (points) => {
-    const { status, score, highScore } = get()
-    if (status !== 'jogando') return
-    const { score: newScore, highScore: newHighScore } = applyScoreDelta(score, highScore, points)
-    set({ score: newScore, highScore: newHighScore })
-  },
-
-  recordLetterResult: (wasCorrect) => {
-    const { status, correctCount, wrongCount } = get()
-    if (status !== 'jogando') return
-    set(
-      wasCorrect ? { correctCount: correctCount + 1 } : { wrongCount: wrongCount + 1 },
-    )
-  },
-
   completeSpellingWord: (wasCorrect) => {
-    const { status, streak, questionsAnsweredInRound } = get()
-    if (status !== 'jogando') return
+    const { status, streak, questionsAnsweredInRound, currentWord, score, highScore, correctCount, wrongCount } = get()
+    if (status !== 'jogando' || !currentWord) return
+    const delta = wasCorrect ? computeSpellingWordScore(currentWord.text) : 0
+    const { score: newScore, highScore: newHighScore } = applyScoreDelta(score, highScore, delta)
     set({
       status: wasCorrect ? 'acertou' : 'errou',
       streak: computeNextStreak(streak, wasCorrect),
       questionsAnsweredInRound: questionsAnsweredInRound + 1,
+      score: newScore,
+      highScore: newHighScore,
+      correctCount: wasCorrect ? correctCount + 1 : correctCount,
+      wrongCount: wasCorrect ? wrongCount : wrongCount + 1,
     })
   },
 

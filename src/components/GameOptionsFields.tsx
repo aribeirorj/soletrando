@@ -42,8 +42,8 @@ interface GameOptionsFieldsProps {
   onSelectMode: (mode: GameMode) => void
   selectedDifficulty: Difficulty | null
   onSelectDifficulty: (difficulty: Difficulty) => void
-  selectedCategory: string | null
-  onSelectCategory: (id: string) => void
+  selectedCategories: string[]
+  onToggleCategory: (id: string) => void
   speechSupported: boolean
 }
 
@@ -52,8 +52,8 @@ export function GameOptionsFields({
   onSelectMode,
   selectedDifficulty,
   onSelectDifficulty,
-  selectedCategory,
-  onSelectCategory,
+  selectedCategories,
+  onToggleCategory,
   speechSupported,
 }: GameOptionsFieldsProps) {
   const isSpeakAndSpell = selectedMode === 'falar-soletrar'
@@ -90,14 +90,15 @@ export function GameOptionsFields({
         <div className="mt-6 flex flex-col gap-2">
           <span className="flex items-center gap-2 text-sm font-semibold text-brand-textMain">
             <BarChartIcon className="h-5 w-5 text-brand-blue" />
-            Categoria
+            Categorias
           </span>
+          <p className="text-xs text-brand-grayText">Selecione uma ou mais categorias.</p>
           <div className="flex flex-wrap gap-2">
             {SPEAK_AND_SPELL_CATEGORIES.map(({ id, label }) => (
               <OptionButton
                 key={id}
-                selected={selectedCategory === id}
-                onClick={() => onSelectCategory(id)}
+                selected={selectedCategories.includes(id)}
+                onClick={() => onToggleCategory(id)}
                 icon={<MicrophoneIcon />}
                 label={label}
                 selectedClassName={MODE_SELECTED_CLASS}

@@ -29,11 +29,16 @@ export function HomeScreen() {
   const [studentNameInput, setStudentNameInput] = useState('')
   const [selectedMode, setSelectedMode] = useState<GameMode | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null)
-  const [selectedCategory, setSelectedCategory] = useState<string | null>(null)
+  const [selectedCategories, setSelectedCategories] = useState<string[]>([])
 
   const isSpeakAndSpell = selectedMode === 'falar-soletrar'
   const hasGameOptions =
-    selectedMode !== null && (isSpeakAndSpell ? selectedCategory !== null : selectedDifficulty !== null)
+    selectedMode !== null && (isSpeakAndSpell ? selectedCategories.length > 0 : selectedDifficulty !== null)
+
+  const handleToggleCategory = (id: string) => {
+    setSelectedCategories((prev) => (prev.includes(id) ? prev.filter((c) => c !== id) : [...prev, id]))
+  }
+
   const canStartIndividual = playerName.trim() !== '' && hasGameOptions
   const canStartTurma = students.length > 0 && hasGameOptions
 
@@ -49,13 +54,17 @@ export function HomeScreen() {
       selectedMode,
       isSpeakAndSpell ? 'dificil' : selectedDifficulty!,
       undefined,
-      isSpeakAndSpell ? selectedCategory : null,
+      isSpeakAndSpell ? selectedCategories : null,
     )
   }
 
   const handleStartSession = () => {
     if (!canStartTurma || !selectedMode) return
-    startSession(selectedMode, isSpeakAndSpell ? 'dificil' : selectedDifficulty!, isSpeakAndSpell ? selectedCategory : null)
+    startSession(
+      selectedMode,
+      isSpeakAndSpell ? 'dificil' : selectedDifficulty!,
+      isSpeakAndSpell ? selectedCategories : null,
+    )
   }
 
   return (
@@ -113,8 +122,8 @@ export function HomeScreen() {
               onSelectMode={setSelectedMode}
               selectedDifficulty={selectedDifficulty}
               onSelectDifficulty={setSelectedDifficulty}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
+              selectedCategories={selectedCategories}
+              onToggleCategory={handleToggleCategory}
               speechSupported={speechSupported}
             />
 
@@ -203,8 +212,8 @@ export function HomeScreen() {
               onSelectMode={setSelectedMode}
               selectedDifficulty={selectedDifficulty}
               onSelectDifficulty={setSelectedDifficulty}
-              selectedCategory={selectedCategory}
-              onSelectCategory={setSelectedCategory}
+              selectedCategories={selectedCategories}
+              onToggleCategory={handleToggleCategory}
               speechSupported={speechSupported}
             />
 

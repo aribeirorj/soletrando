@@ -19,7 +19,11 @@ export function SessionRosterScreen() {
           >
             <div>
               <p className="font-semibold">{student.name}</p>
-              <p className="text-sm text-muted-foreground">{student.totalScore} pontos</p>
+              <p className="text-sm text-muted-foreground">
+                {student.totalScore} pontos ·{' '}
+                <span className="font-semibold text-green-600">{student.correctCount} acertos</span> ·{' '}
+                <span className="font-semibold text-brand-red">{student.wrongCount} erros</span>
+              </p>
             </div>
             <button
               type="button"

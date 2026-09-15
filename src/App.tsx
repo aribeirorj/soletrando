@@ -4,7 +4,6 @@ import { HomeScreen } from './components/HomeScreen'
 import { ListenAndTypeGame } from './components/ListenAndTypeGame'
 import { UnscrambleGame } from './components/UnscrambleGame'
 import { SpeakAndSpellGame } from './components/SpeakAndSpellGame'
-import { SessionSetupScreen } from './components/SessionSetupScreen'
 import { SessionRosterScreen } from './components/SessionRosterScreen'
 import { RankingScreen } from './components/RankingScreen'
 import { useGameStore } from './store/gameStore'
@@ -46,7 +45,6 @@ function App() {
       {mode === 'falar-soletrar' && <SpeakAndSpellGame />}
 
       {mode === null && sessionView === 'idle' && <HomeScreen />}
-      {mode === null && sessionView === 'setup' && <SessionSetupScreen />}
       {mode === null && sessionView === 'roster' && <SessionRosterScreen />}
       {mode === null && sessionView === 'ranking' && <RankingScreen />}
     </div>

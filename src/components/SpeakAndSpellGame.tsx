@@ -1,60 +1,74 @@
 import { useEffect, useState } from 'react'
-import { useGameStore } from '../store/gameStore'
+import { useGameStore, SPEAK_AND_SPELL_POINTS_PER_LETTER } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
-import { useSpeechRecognition } from '../hooks/useSpeechRecognition'
 import { useCountdown } from '../hooks/useCountdown'
-import { isLetterPronunciationCorrect } from '../store/letterMatch'
 import { ScoreBoard } from './ScoreBoard'
 import { Timer } from './Timer'
 import { RoundFeedback } from './RoundFeedback'
-import { MicrophoneIcon } from './icons'
+import { CheckCircleIcon, XCircleIcon } from './icons'
 
 const ROUND_SECONDS = 30
+
+function spellableIndices(letters: string[]): number[] {
+  return letters.reduce<number[]>((indices, letter, index) => {
+    if (letter !== ' ') indices.push(index)
+    return indices
+  }, [])
+}
 
 export function SpeakAndSpellGame() {
   const currentWord = useGameStore((s) => s.currentWord)
   const status = useGameStore((s) => s.status)
-  const submitAnswer = useGameStore((s) => s.submitAnswer)
+  const awardPoints = useGameStore((s) => s.awardPoints)
+  const recordLetterResult = useGameStore((s) => s.recordLetterResult)
+  const completeSpellingWord = useGameStore((s) => s.completeSpellingWord)
   const handleTimeout = useGameStore((s) => s.handleTimeout)
   const pickNextWord = useGameStore((s) => s.pickNextWord)
   const roundLength = useGameStore((s) => s.roundLength)
   const questionsAnsweredInRound = useGameStore((s) => s.questionsAnsweredInRound)
   const finishTurn = useSessionStore((s) => s.finishTurn)
 
-  const { isSupported, isListening, error, listenOnce } = useSpeechRecognition()
   const { remaining, reset } = useCountdown({ seconds: ROUND_SECONDS, onExpire: handleTimeout })
 
   const [letterIndex, setLetterIndex] = useState(0)
-  const [lastAttempt, setLastAttempt] = useState<{ transcript: string; correct: boolean } | null>(
-    null,
-  )
+  const [lastAttemptWasWrong, setLastAttemptWasWrong] = useState(false)
+  const [hasMistake, setHasMistake] = useState(false)
+  const [wrongDisplayIndices, setWrongDisplayIndices] = useState<Set<number>>(new Set())
 
   useEffect(() => {
     setLetterIndex(0)
-    setLastAttempt(null)
+    setLastAttemptWasWrong(false)
+    setHasMistake(false)
+    setWrongDisplayIndices(new Set())
   }, [currentWord])
 
   if (!currentWord) return null
 
   const isRoundComplete = roundLength !== null && questionsAnsweredInRound >= roundLength
   const letters = currentWord.text.split('')
+  const spellable = spellableIndices(letters)
+  const currentDisplayIndex = spellable[letterIndex]
 
-  const handleListen = async () => {
-    const transcript = await listenOnce()
-    if (!transcript) {
-      setLastAttempt(null)
-      return
-    }
-
-    const correct = isLetterPronunciationCorrect(letters[letterIndex], transcript)
-    setLastAttempt({ transcript, correct })
-
-    if (!correct) return
-
+  const handleCorrect = () => {
+    setLastAttemptWasWrong(false)
+    awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    recordLetterResult(true)
     const nextIndex = letterIndex + 1
     setLetterIndex(nextIndex)
-    if (nextIndex === letters.length) {
-      submitAnswer(currentWord.text)
+    if (nextIndex === spellable.length) {
+      completeSpellingWord(!hasMistake)
+    }
+  }
+
+  const handleIncorrect = () => {
+    setLastAttemptWasWrong(true)
+    setHasMistake(true)
+    recordLetterResult(false)
+    setWrongDisplayIndices((prev) => new Set(prev).add(currentDisplayIndex))
+    const nextIndex = letterIndex + 1
+    setLetterIndex(nextIndex)
+    if (nextIndex === spellable.length) {
+      completeSpellingWord(false)
     }
   }
 
@@ -70,55 +84,58 @@ export function SpeakAndSpellGame() {
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-10">
       <ScoreBoard />
-      {roundLength !== null && (
-        <p className="text-sm text-muted-foreground">
-          Pergunta {Math.min(questionsAnsweredInRound + 1, roundLength)} de {roundLength}
-        </p>
-      )}
+      <p className="text-sm text-muted-foreground">
+        Pergunta {roundLength !== null ? Math.min(questionsAnsweredInRound + 1, roundLength) : questionsAnsweredInRound + 1}
+        {roundLength !== null && ` de ${roundLength}`}
+      </p>
       <Timer remaining={remaining} total={ROUND_SECONDS} />
 
-      {isSupported ? (
-        <>
-          <div className="flex gap-2 text-3xl font-bold uppercase tracking-widest">
-            {letters.map((letter, index) => (
-              <span
-                key={index}
-                className={
-                  index < letterIndex
-                    ? 'text-primary'
-                    : index === letterIndex
-                      ? 'rounded-md bg-accent px-1 text-accent-foreground'
-                      : 'text-muted-foreground'
-                }
-              >
-                {letter}
-              </span>
-            ))}
-          </div>
-          <p className="text-sm text-muted-foreground">
-            Letra {letterIndex + 1} de {letters.length}
-          </p>
-
-          <button
-            type="button"
-            onClick={handleListen}
-            disabled={status !== 'jogando' || isListening}
-            className="flex items-center gap-2 rounded-md border px-4 py-2 text-lg disabled:opacity-50"
+      <div className="flex gap-2 text-3xl font-bold uppercase tracking-widest">
+        {letters.map((letter, index) => (
+          <span
+            key={index}
+            className={
+              index === currentDisplayIndex
+                ? 'rounded-md bg-accent px-1 text-accent-foreground'
+                : index < currentDisplayIndex
+                  ? wrongDisplayIndices.has(index)
+                    ? 'text-brand-red'
+                    : 'text-primary'
+                  : 'text-muted-foreground'
+            }
           >
-            <MicrophoneIcon /> {isListening ? 'Ouvindo...' : 'Falar letra'}
-          </button>
+            {letter === ' ' ? ' ' : letter}
+          </span>
+        ))}
+      </div>
+      <p className="text-sm text-muted-foreground">
+        Letra {Math.min(letterIndex + 1, spellable.length)} de {spellable.length}
+      </p>
+      <p className="text-xs text-muted-foreground">
+        Peça para o aluno falar a letra em voz alta e confirme abaixo.
+      </p>
 
-          {lastAttempt && !lastAttempt.correct && (
-            <p className="text-sm text-muted-foreground">
-              Ouvi "{lastAttempt.transcript}", tente de novo.
-            </p>
-          )}
-          {error && <p className="text-sm text-muted-foreground">{error}</p>}
-        </>
-      ) : (
-        <p className="text-sm text-muted-foreground">
-          Reconhecimento de voz não disponível neste navegador.
-        </p>
+      <div className="flex gap-3">
+        <button
+          type="button"
+          onClick={handleCorrect}
+          disabled={status !== 'jogando'}
+          className="flex items-center gap-2 rounded-md border border-green-600 bg-green-500 px-4 py-2 text-lg font-semibold text-white disabled:opacity-50"
+        >
+          <CheckCircleIcon /> Correto
+        </button>
+        <button
+          type="button"
+          onClick={handleIncorrect}
+          disabled={status !== 'jogando'}
+          className="flex items-center gap-2 rounded-md border border-brand-redDark bg-brand-red px-4 py-2 text-lg font-semibold text-white disabled:opacity-50"
+        >
+          <XCircleIcon /> Incorreto
+        </button>
+      </div>
+
+      {lastAttemptWasWrong && status === 'jogando' && (
+        <p className="text-sm text-brand-red">Essa letra ficou incorreta.</p>
       )}
 
       {status !== 'jogando' && (

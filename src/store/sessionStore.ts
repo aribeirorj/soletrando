@@ -6,14 +6,35 @@ export interface Student {
   id: string
   name: string
   totalScore: number
+  correctCount: number
+  wrongCount: number
 }
 
 export function createStudent(name: string): Student {
-  return { id: crypto.randomUUID(), name: name.trim(), totalScore: 0 }
+  return { id: crypto.randomUUID(), name: name.trim(), totalScore: 0, correctCount: 0, wrongCount: 0 }
 }
 
-export function addPointsToStudent(students: Student[], studentId: string, points: number): Student[] {
-  return students.map((s) => (s.id === studentId ? { ...s, totalScore: s.totalScore + points } : s))
+export interface TurnResult {
+  score: number
+  correctCount: number
+  wrongCount: number
+}
+
+export function addTurnResultToStudent(
+  students: Student[],
+  studentId: string,
+  result: TurnResult,
+): Student[] {
+  return students.map((s) =>
+    s.id === studentId
+      ? {
+          ...s,
+          totalScore: s.totalScore + result.score,
+          correctCount: s.correctCount + result.correctCount,
+          wrongCount: s.wrongCount + result.wrongCount,
+        }
+      : s,
+  )
 }
 
 export function sortByScoreDescending(students: Student[]): Student[] {
@@ -28,6 +49,7 @@ interface PersistedSession {
   questionsPerRound: number
   mode: GameMode | null
   difficulty: Difficulty | null
+  category: string | null
 }
 
 const DEFAULT_SESSION: PersistedSession = {
@@ -35,12 +57,22 @@ const DEFAULT_SESSION: PersistedSession = {
   questionsPerRound: 5,
   mode: null,
   difficulty: null,
+  category: null,
+}
+
+function normalizeStudents(students: Student[]): Student[] {
+  return students.map((s) => ({
+    ...s,
+    correctCount: s.correctCount ?? 0,
+    wrongCount: s.wrongCount ?? 0,
+  }))
 }
 
 function loadSession(): PersistedSession {
   try {
     const raw = localStorage.getItem(SESSION_KEY)
-    return raw !== null ? JSON.parse(raw) : (memorySession ?? DEFAULT_SESSION)
+    const session = raw !== null ? JSON.parse(raw) : (memorySession ?? DEFAULT_SESSION)
+    return { ...session, students: normalizeStudents(session.students) }
   } catch {
     return memorySession ?? DEFAULT_SESSION
   }
@@ -55,7 +87,7 @@ function saveSession(session: PersistedSession): void {
   }
 }
 
-type SessionView = 'idle' | 'setup' | 'roster' | 'ranking'
+type SessionView = 'idle' | 'roster' | 'ranking'
 
 interface SessionState {
   view: SessionView
@@ -63,14 +95,13 @@ interface SessionState {
   questionsPerRound: number
   mode: GameMode | null
   difficulty: Difficulty | null
+  category: string | null
   activeStudentId: string | null
 
-  openSetup: () => void
-  cancelSetup: () => void
   addStudent: (name: string) => void
   removeStudent: (id: string) => void
   setQuestionsPerRound: (n: number) => void
-  startSession: (mode: GameMode, difficulty: Difficulty) => void
+  startSession: (mode: GameMode, difficulty: Difficulty, category?: string | null) => void
   startTurn: (studentId: string) => void
   finishTurn: () => void
   cancelTurn: () => void
@@ -87,11 +118,8 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   questionsPerRound: initialSession.questionsPerRound,
   mode: initialSession.mode,
   difficulty: initialSession.difficulty,
+  category: initialSession.category,
   activeStudentId: null,
-
-  openSetup: () => set({ view: 'setup' }),
-
-  cancelSetup: () => set({ view: 'idle' }),
 
   addStudent: (name) => {
     const students = [...get().students, createStudent(name)]
@@ -101,6 +129,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       questionsPerRound: get().questionsPerRound,
       mode: get().mode,
       difficulty: get().difficulty,
+      category: get().category,
     })
   },
 
@@ -112,6 +141,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       questionsPerRound: get().questionsPerRound,
       mode: get().mode,
       difficulty: get().difficulty,
+      category: get().category,
     })
   },
 
@@ -122,38 +152,48 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       questionsPerRound: n,
       mode: get().mode,
       difficulty: get().difficulty,
+      category: get().category,
     })
   },
 
-  startSession: (mode, difficulty) => {
+  startSession: (mode, difficulty, category = null) => {
     if (get().students.length === 0) return
-    set({ mode, difficulty, view: 'roster' })
+    set({ mode, difficulty, category, view: 'roster' })
     saveSession({
       students: get().students,
       questionsPerRound: get().questionsPerRound,
       mode,
       difficulty,
+      category,
     })
   },
 
   startTurn: (studentId) => {
-    const { mode, difficulty, questionsPerRound } = get()
+    const { mode, difficulty, category, questionsPerRound } = get()
     if (!mode || !difficulty) return
+    if (mode === 'falar-soletrar' && !category) {
+      // Sessão persistida antes de categorias existirem (ou dado corrompido): sem uma
+      // categoria válida o modo falar-soletrar não tem palavras para jogar. Volta pra
+      // Home (view 'idle'), onde o professor pode reconfigurar a sessão de turma.
+      set({ view: 'idle' })
+      return
+    }
     set({ activeStudentId: studentId })
-    useGameStore.getState().startGame(mode, difficulty, questionsPerRound)
+    useGameStore.getState().startGame(mode, difficulty, questionsPerRound, category)
   },
 
   finishTurn: () => {
     const { activeStudentId, students } = get()
     if (activeStudentId) {
-      const score = useGameStore.getState().score
-      const updated = addPointsToStudent(students, activeStudentId, score)
+      const { score, correctCount, wrongCount } = useGameStore.getState()
+      const updated = addTurnResultToStudent(students, activeStudentId, { score, correctCount, wrongCount })
       set({ students: updated, activeStudentId: null, view: 'roster' })
       saveSession({
         students: updated,
         questionsPerRound: get().questionsPerRound,
         mode: get().mode,
         difficulty: get().difficulty,
+        category: get().category,
       })
     } else {
       set({ view: 'roster' })
@@ -176,6 +216,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       students: [],
       mode: null,
       difficulty: null,
+      category: null,
       activeStudentId: null,
     })
     saveSession(DEFAULT_SESSION)

@@ -49,11 +49,10 @@ export function ListenAndTypeGame() {
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-10">
       <ScoreBoard />
-      {roundLength !== null && (
-        <p className="text-sm text-muted-foreground">
-          Pergunta {Math.min(questionsAnsweredInRound + 1, roundLength)} de {roundLength}
-        </p>
-      )}
+      <p className="text-sm text-muted-foreground">
+        Pergunta {roundLength !== null ? Math.min(questionsAnsweredInRound + 1, roundLength) : questionsAnsweredInRound + 1}
+        {roundLength !== null && ` de ${roundLength}`}
+      </p>
       <Timer remaining={remaining} total={ROUND_SECONDS} />
 
       {isSupported ? (

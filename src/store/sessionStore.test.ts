@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, test } from 'vitest'
 import {
-  addPointsToStudent,
+  addTurnResultToStudent,
   createStudent,
   sortByScoreDescending,
   useSessionStore,
@@ -13,8 +13,11 @@ describe('createStudent', () => {
     expect(createStudent('  Ana  ').name).toBe('Ana')
   })
 
-  test('starts with zero total score', () => {
-    expect(createStudent('Ana').totalScore).toBe(0)
+  test('starts with zero total score, correct count and wrong count', () => {
+    const student = createStudent('Ana')
+    expect(student.totalScore).toBe(0)
+    expect(student.correctCount).toBe(0)
+    expect(student.wrongCount).toBe(0)
   })
 
   test('assigns a non-empty unique id to each student', () => {
@@ -27,21 +30,27 @@ describe('createStudent', () => {
   })
 })
 
-describe('addPointsToStudent', () => {
+describe('addTurnResultToStudent', () => {
   const students: Student[] = [
-    { id: '1', name: 'Ana', totalScore: 10 },
-    { id: '2', name: 'Beto', totalScore: 5 },
+    { id: '1', name: 'Ana', totalScore: 10, correctCount: 2, wrongCount: 1 },
+    { id: '2', name: 'Beto', totalScore: 5, correctCount: 1, wrongCount: 0 },
   ]
 
-  test('adds points to the matching student only', () => {
-    const result = addPointsToStudent(students, '1', 20)
+  test('adds the score, correct count and wrong count to the matching student only', () => {
+    const result = addTurnResultToStudent(students, '1', { score: 20, correctCount: 3, wrongCount: 2 })
 
-    expect(result.find((s) => s.id === '1')?.totalScore).toBe(30)
-    expect(result.find((s) => s.id === '2')?.totalScore).toBe(5)
+    const ana = result.find((s) => s.id === '1')
+    expect(ana?.totalScore).toBe(30)
+    expect(ana?.correctCount).toBe(5)
+    expect(ana?.wrongCount).toBe(3)
+    const beto = result.find((s) => s.id === '2')
+    expect(beto?.totalScore).toBe(5)
+    expect(beto?.correctCount).toBe(1)
+    expect(beto?.wrongCount).toBe(0)
   })
 
   test('does not mutate the original array', () => {
-    addPointsToStudent(students, '1', 20)
+    addTurnResultToStudent(students, '1', { score: 20, correctCount: 3, wrongCount: 2 })
 
     expect(students.find((s) => s.id === '1')?.totalScore).toBe(10)
   })
@@ -50,9 +59,9 @@ describe('addPointsToStudent', () => {
 describe('sortByScoreDescending', () => {
   test('orders students from highest to lowest score', () => {
     const students: Student[] = [
-      { id: '1', name: 'Ana', totalScore: 10 },
-      { id: '2', name: 'Beto', totalScore: 30 },
-      { id: '3', name: 'Caio', totalScore: 20 },
+      { id: '1', name: 'Ana', totalScore: 10, correctCount: 0, wrongCount: 0 },
+      { id: '2', name: 'Beto', totalScore: 30, correctCount: 0, wrongCount: 0 },
+      { id: '3', name: 'Caio', totalScore: 20, correctCount: 0, wrongCount: 0 },
     ]
 
     const sorted = sortByScoreDescending(students)
@@ -62,8 +71,8 @@ describe('sortByScoreDescending', () => {
 
   test('keeps the original relative order for tied scores', () => {
     const students: Student[] = [
-      { id: '1', name: 'Ana', totalScore: 10 },
-      { id: '2', name: 'Beto', totalScore: 10 },
+      { id: '1', name: 'Ana', totalScore: 10, correctCount: 0, wrongCount: 0 },
+      { id: '2', name: 'Beto', totalScore: 10, correctCount: 0, wrongCount: 0 },
     ]
 
     const sorted = sortByScoreDescending(students)
@@ -81,23 +90,10 @@ describe('useSessionStore', () => {
       questionsPerRound: 5,
       mode: null,
       difficulty: null,
+      category: null,
       activeStudentId: null,
     })
     useGameStore.getState().resetGame()
-  })
-
-  test('openSetup switches the view to setup', () => {
-    useSessionStore.getState().openSetup()
-
-    expect(useSessionStore.getState().view).toBe('setup')
-  })
-
-  test('cancelSetup switches the view back to idle', () => {
-    useSessionStore.getState().openSetup()
-
-    useSessionStore.getState().cancelSetup()
-
-    expect(useSessionStore.getState().view).toBe('idle')
   })
 
   test('startSession switches the view to roster', () => {
@@ -179,18 +175,39 @@ describe('useSessionStore', () => {
     expect(gameState.roundLength).toBe(3)
   })
 
-  test('finishTurn adds the round score to the active student and resets the game', () => {
+  test('finishTurn adds the round score, correct count and wrong count to the active student and resets the game', () => {
     useSessionStore.getState().addStudent('Ana')
     useSessionStore.getState().startSession('ouvir-digitar', 'facil')
     const studentId = useSessionStore.getState().students[0].id
     useSessionStore.getState().startTurn(studentId)
-    useGameStore.setState({ score: 25 })
+    useGameStore.setState({ score: 25, correctCount: 2, wrongCount: 1 })
 
     useSessionStore.getState().finishTurn()
 
     const student = useSessionStore.getState().students.find((s) => s.id === studentId)
     expect(student?.totalScore).toBe(25)
+    expect(student?.correctCount).toBe(2)
+    expect(student?.wrongCount).toBe(1)
     expect(useGameStore.getState().mode).toBeNull()
+  })
+
+  test('finishTurn accumulates results across multiple turns for the same student', () => {
+    useSessionStore.getState().addStudent('Ana')
+    useSessionStore.getState().startSession('ouvir-digitar', 'facil')
+    const studentId = useSessionStore.getState().students[0].id
+
+    useSessionStore.getState().startTurn(studentId)
+    useGameStore.setState({ score: 10, correctCount: 1, wrongCount: 0 })
+    useSessionStore.getState().finishTurn()
+
+    useSessionStore.getState().startTurn(studentId)
+    useGameStore.setState({ score: 20, correctCount: 1, wrongCount: 2 })
+    useSessionStore.getState().finishTurn()
+
+    const student = useSessionStore.getState().students.find((s) => s.id === studentId)
+    expect(student?.totalScore).toBe(30)
+    expect(student?.correctCount).toBe(2)
+    expect(student?.wrongCount).toBe(2)
   })
 
   test('cancelTurn resets the game without crediting any points', () => {
@@ -215,5 +232,42 @@ describe('useSessionStore', () => {
 
     expect(useSessionStore.getState().students).toEqual([])
     expect(useSessionStore.getState().mode).toBeNull()
+  })
+
+  test('startSession stores the chosen category for falar-soletrar', () => {
+    useSessionStore.getState().addStudent('Ana')
+
+    useSessionStore.getState().startSession('falar-soletrar', 'dificil', 'animals')
+
+    expect(useSessionStore.getState().category).toBe('animals')
+  })
+
+  test('startTurn passes the session category through to the game store', () => {
+    useSessionStore.getState().addStudent('Ana')
+    useSessionStore.getState().startSession('falar-soletrar', 'dificil', 'animals')
+    const studentId = useSessionStore.getState().students[0].id
+
+    useSessionStore.getState().startTurn(studentId)
+
+    const gameState = useGameStore.getState()
+    expect(gameState.mode).toBe('falar-soletrar')
+    expect(gameState.category).toBe('animals')
+  })
+
+  test('startTurn sends the teacher back to the home screen instead of starting falar-soletrar without a category (e.g. a session persisted before categories existed)', () => {
+    useSessionStore.getState().addStudent('Ana')
+    useSessionStore.setState({
+      mode: 'falar-soletrar',
+      difficulty: 'facil',
+      category: null,
+      view: 'roster',
+    })
+    const studentId = useSessionStore.getState().students[0].id
+
+    useSessionStore.getState().startTurn(studentId)
+
+    expect(useSessionStore.getState().view).toBe('idle')
+    expect(useGameStore.getState().mode).toBeNull()
+    expect(useGameStore.getState().currentWord).toBeNull()
   })
 })

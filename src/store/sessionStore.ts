@@ -49,7 +49,7 @@ interface PersistedSession {
   questionsPerRound: number
   mode: GameMode | null
   difficulty: Difficulty | null
-  category: string | null
+  category: string[] | null
 }
 
 const DEFAULT_SESSION: PersistedSession = {
@@ -95,13 +95,13 @@ interface SessionState {
   questionsPerRound: number
   mode: GameMode | null
   difficulty: Difficulty | null
-  category: string | null
+  category: string[] | null
   activeStudentId: string | null
 
   addStudent: (name: string) => void
   removeStudent: (id: string) => void
   setQuestionsPerRound: (n: number) => void
-  startSession: (mode: GameMode, difficulty: Difficulty, category?: string | null) => void
+  startSession: (mode: GameMode, difficulty: Difficulty, category?: string[] | null) => void
   startTurn: (studentId: string) => void
   finishTurn: () => void
   cancelTurn: () => void
@@ -171,7 +171,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   startTurn: (studentId) => {
     const { mode, difficulty, category, questionsPerRound } = get()
     if (!mode || !difficulty) return
-    if (mode === 'falar-soletrar' && !category) {
+    if (mode === 'falar-soletrar' && (!category || category.length === 0)) {
       // Sessão persistida antes de categorias existirem (ou dado corrompido): sem uma
       // categoria válida o modo falar-soletrar não tem palavras para jogar. Volta pra
       // Home (view 'idle'), onde o professor pode reconfigurar a sessão de turma.

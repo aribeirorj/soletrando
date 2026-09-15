@@ -234,24 +234,24 @@ describe('useSessionStore', () => {
     expect(useSessionStore.getState().mode).toBeNull()
   })
 
-  test('startSession stores the chosen category for falar-soletrar', () => {
+  test('startSession stores the chosen categories for falar-soletrar', () => {
     useSessionStore.getState().addStudent('Ana')
 
-    useSessionStore.getState().startSession('falar-soletrar', 'dificil', 'animals')
+    useSessionStore.getState().startSession('falar-soletrar', 'dificil', ['animals'])
 
-    expect(useSessionStore.getState().category).toBe('animals')
+    expect(useSessionStore.getState().category).toEqual(['animals'])
   })
 
-  test('startTurn passes the session category through to the game store', () => {
+  test('startTurn passes the session categories through to the game store', () => {
     useSessionStore.getState().addStudent('Ana')
-    useSessionStore.getState().startSession('falar-soletrar', 'dificil', 'animals')
+    useSessionStore.getState().startSession('falar-soletrar', 'dificil', ['animals'])
     const studentId = useSessionStore.getState().students[0].id
 
     useSessionStore.getState().startTurn(studentId)
 
     const gameState = useGameStore.getState()
     expect(gameState.mode).toBe('falar-soletrar')
-    expect(gameState.category).toBe('animals')
+    expect(gameState.category).toEqual(['animals'])
   })
 
   test('startTurn sends the teacher back to the home screen instead of starting falar-soletrar without a category (e.g. a session persisted before categories existed)', () => {
@@ -269,5 +269,20 @@ describe('useSessionStore', () => {
     expect(useSessionStore.getState().view).toBe('idle')
     expect(useGameStore.getState().mode).toBeNull()
     expect(useGameStore.getState().currentWord).toBeNull()
+  })
+
+  test('startTurn sends the teacher back to the home screen when the session category list is empty', () => {
+    useSessionStore.getState().addStudent('Ana')
+    useSessionStore.setState({
+      mode: 'falar-soletrar',
+      difficulty: 'facil',
+      category: [],
+      view: 'roster',
+    })
+    const studentId = useSessionStore.getState().students[0].id
+
+    useSessionStore.getState().startTurn(studentId)
+
+    expect(useSessionStore.getState().view).toBe('idle')
   })
 })

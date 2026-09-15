@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useGameStore, SPEAK_AND_SPELL_POINTS_PER_LETTER } from '../store/gameStore'
+import { useGameStore } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
 import { useCountdown } from '../hooks/useCountdown'
 import { ScoreBoard } from './ScoreBoard'
@@ -19,8 +19,6 @@ function spellableIndices(letters: string[]): number[] {
 export function SpeakAndSpellGame() {
   const currentWord = useGameStore((s) => s.currentWord)
   const status = useGameStore((s) => s.status)
-  const awardPoints = useGameStore((s) => s.awardPoints)
-  const recordLetterResult = useGameStore((s) => s.recordLetterResult)
   const completeSpellingWord = useGameStore((s) => s.completeSpellingWord)
   const handleTimeout = useGameStore((s) => s.handleTimeout)
   const pickNextWord = useGameStore((s) => s.pickNextWord)
@@ -51,8 +49,6 @@ export function SpeakAndSpellGame() {
 
   const handleCorrect = () => {
     setLastAttemptWasWrong(false)
-    awardPoints(SPEAK_AND_SPELL_POINTS_PER_LETTER)
-    recordLetterResult(true)
     const nextIndex = letterIndex + 1
     setLetterIndex(nextIndex)
     if (nextIndex === spellable.length) {
@@ -63,7 +59,6 @@ export function SpeakAndSpellGame() {
   const handleIncorrect = () => {
     setLastAttemptWasWrong(true)
     setHasMistake(true)
-    recordLetterResult(false)
     setWrongDisplayIndices((prev) => new Set(prev).add(currentDisplayIndex))
     const nextIndex = letterIndex + 1
     setLetterIndex(nextIndex)

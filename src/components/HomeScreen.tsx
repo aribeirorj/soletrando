@@ -5,7 +5,6 @@ import { useSpeech } from '../hooks/useSpeech'
 import type { Difficulty, GameMode } from '../types'
 import logoJogo from '../assets/logo-jogo.png'
 import { HeroIllustration } from './HeroIllustration'
-import { DecorativeAside } from './DecorativeAside'
 import { RecordBadge } from './RecordBadge'
 import { OptionButton } from './OptionButton'
 import { GameOptionsFields, MODE_SELECTED_CLASS } from './GameOptionsFields'
@@ -229,8 +228,6 @@ export function HomeScreen() {
           </>
         )}
       </div>
-
-      <DecorativeAside />
     </div>
   )
 }

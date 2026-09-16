@@ -179,11 +179,3 @@ export function PaperPlaneIcon(props: SVGProps<SVGSVGElement>) {
     </Icon>
   )
 }
-
-export function HeartIcon(props: SVGProps<SVGSVGElement>) {
-  return (
-    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor" aria-hidden="true" {...props}>
-      <path d="M12 21s-7-4.35-9.5-8.5C.5 8.5 3 5 6.5 5c2 0 3.5 1.2 4.5 2.7C12 6.2 13.5 5 15.5 5 19 5 21.5 8.5 19.5 12.5 17 16.65 12 21 12 21Z" />
-    </svg>
-  )
-}

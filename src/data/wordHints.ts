@@ -1,0 +1,73 @@
+// Dicas em português para as palavras dos modos "Ouvir e Digitar" e
+// "Letras Embaralhadas". Nunca devem conter a própria palavra em inglês.
+const WORD_HINTS: Record<string, string> = {
+  // Fácil
+  cat: 'Animal de estimação que mia',
+  dog: 'Animal de estimação que late',
+  sun: 'Estrela que ilumina o dia',
+  hat: 'Acessório usado na cabeça para proteger do sol',
+  pen: 'Objeto para escrever com tinta',
+  box: 'Recipiente de papelão para guardar coisas',
+  cup: 'Recipiente pequeno com alça para beber café ou chá',
+  run: 'Mover-se muito rápido com as pernas',
+  big: 'O contrário de pequeno',
+  red: 'Cor do morango e do tomate',
+  bed: 'Móvel onde dormimos',
+  egg: 'A galinha bota e a gente frita',
+  ice: 'Água congelada',
+  jam: 'Doce de fruta para passar no pão',
+  key: 'Objeto usado para abrir a fechadura',
+  leg: 'Parte do corpo usada para andar',
+  map: 'Desenho que mostra ruas, cidades e países',
+  net: 'Rede usada no gol ou para pescar',
+  owl: 'Ave noturna de olhos grandes',
+  pig: 'Animal da fazenda cor-de-rosa que faz "oinc"',
+
+  // Médio
+  apple: 'Fruta vermelha ou verde, crocante',
+  bread: 'Alimento feito de farinha, comido no café da manhã',
+  chair: 'Móvel para sentar',
+  dance: 'Mexer o corpo no ritmo da música',
+  eagle: 'Grande ave de rapina que voa muito alto',
+  flower: 'Parte colorida e perfumada da planta',
+  garden: 'Lugar com plantas e flores ao redor da casa',
+  hammer: 'Ferramenta para bater pregos',
+  island: 'Pedaço de terra cercado de água por todos os lados',
+  jungle: 'Floresta tropical densa, cheia de animais',
+  kitten: 'Filhote de gato',
+  lemon: 'Fruta azeda e amarela usada em limonada',
+  mirror: 'Objeto em que vemos nosso reflexo',
+  nickel: 'Moeda de cinco centavos nos Estados Unidos',
+  orange: 'Fruta cítrica que dá nome a uma cor',
+  pencil: 'Objeto para escrever que se apaga com borracha',
+  rabbit: 'Animal de orelhas compridas que adora cenoura',
+  silver: 'Metal brilhante, prêmio do segundo lugar',
+  tiger: 'Felino grande, laranja com listras pretas',
+  violet: 'Cor roxa, também nome de uma flor',
+
+  // Difícil
+  beautiful: 'Muito bonito',
+  chocolate: 'Doce feito de cacau',
+  dangerous: 'Que oferece perigo',
+  dictionary: 'Livro com o significado das palavras',
+  elephant: 'O maior animal terrestre, tem tromba',
+  favorite: 'Aquele de que você mais gosta',
+  government: 'Grupo que administra um país',
+  hospital: 'Lugar onde médicos cuidam dos doentes',
+  important: 'Que tem muito valor ou relevância',
+  knowledge: 'Aquilo que aprendemos e sabemos',
+  language: 'Idioma, como o português ou o inglês',
+  mountain: 'Elevação de terra muito alta',
+  necessary: 'Que é preciso, indispensável',
+  parliament: 'Lugar onde os representantes do povo criam leis',
+  restaurant: 'Lugar onde pedimos e comemos refeições',
+  telephone: 'Aparelho para falar com alguém à distância',
+  umbrella: 'Objeto que nos protege da chuva',
+  vegetable: 'Alimento como cenoura, alface ou brócolis',
+  wonderful: 'Maravilhoso',
+  xylophone: 'Instrumento musical de teclas tocado com baquetas',
+}
+
+export function getWordHint(word: string): string | null {
+  return WORD_HINTS[word.toLowerCase()] ?? null
+}

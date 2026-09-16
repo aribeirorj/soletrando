@@ -93,7 +93,7 @@ export function GameOptionsFields({
             Categorias
           </span>
           <p className="text-xs text-brand-grayText">Selecione uma ou mais categorias.</p>
-          <div className="flex flex-wrap gap-2">
+          <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:grid-cols-3">
             {SPEAK_AND_SPELL_CATEGORIES.map(({ id, label }) => (
               <OptionButton
                 key={id}
@@ -102,6 +102,7 @@ export function GameOptionsFields({
                 icon={<MicrophoneIcon />}
                 label={label}
                 selectedClassName={MODE_SELECTED_CLASS}
+                align="left"
               />
             ))}
           </div>

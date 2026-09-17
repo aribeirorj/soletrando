@@ -18,10 +18,10 @@ export function HomeScreen() {
   const { isSupported: speechSupported } = useSpeech()
 
   const students = useSessionStore((s) => s.students)
-  const questionsPerRound = useSessionStore((s) => s.questionsPerRound)
+  const questionsPerTurn = useSessionStore((s) => s.questionsPerTurn)
   const addStudent = useSessionStore((s) => s.addStudent)
   const removeStudent = useSessionStore((s) => s.removeStudent)
-  const setQuestionsPerRound = useSessionStore((s) => s.setQuestionsPerRound)
+  const setQuestionsPerTurn = useSessionStore((s) => s.setQuestionsPerTurn)
   const startSession = useSessionStore((s) => s.startSession)
 
   const [playMode, setPlayMode] = useState<'individual' | 'turma' | null>(null)
@@ -193,15 +193,15 @@ export function HomeScreen() {
             </div>
 
             <div className="mt-6 flex flex-col gap-2">
-              <label htmlFor="questions-per-round" className="text-sm font-semibold text-brand-textMain">
+              <label htmlFor="questions-per-turn" className="text-sm font-semibold text-brand-textMain">
                 Perguntas por rodada
               </label>
               <input
-                id="questions-per-round"
+                id="questions-per-turn"
                 type="number"
                 min={1}
-                value={questionsPerRound}
-                onChange={(e) => setQuestionsPerRound(Math.max(1, Number(e.target.value) || 1))}
+                value={questionsPerTurn}
+                onChange={(e) => setQuestionsPerTurn(Math.max(1, Number(e.target.value) || 1))}
                 className="h-14 rounded-2xl border border-brand-blue/30 bg-white px-4 text-base focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
               />
             </div>

@@ -4,10 +4,10 @@ import { useSessionStore } from '../store/sessionStore'
 import { useCountdown } from '../hooks/useCountdown'
 import { ScoreBoard } from './ScoreBoard'
 import { Timer } from './Timer'
-import { RoundFeedback } from './RoundFeedback'
+import { QuestionFeedback } from './QuestionFeedback'
 import { CheckCircleIcon, XCircleIcon } from './icons'
 
-const ROUND_SECONDS = 30
+const QUESTION_SECONDS = 30
 
 function spellableIndices(letters: string[]): number[] {
   return letters.reduce<number[]>((indices, letter, index) => {
@@ -22,11 +22,11 @@ export function SpeakAndSpellGame() {
   const completeSpellingWord = useGameStore((s) => s.completeSpellingWord)
   const handleTimeout = useGameStore((s) => s.handleTimeout)
   const pickNextWord = useGameStore((s) => s.pickNextWord)
-  const roundLength = useGameStore((s) => s.roundLength)
-  const questionsAnsweredInRound = useGameStore((s) => s.questionsAnsweredInRound)
+  const turnLength = useGameStore((s) => s.turnLength)
+  const questionsAnsweredInTurn = useGameStore((s) => s.questionsAnsweredInTurn)
   const finishTurn = useSessionStore((s) => s.finishTurn)
 
-  const { remaining, reset } = useCountdown({ seconds: ROUND_SECONDS, onExpire: handleTimeout })
+  const { remaining, reset } = useCountdown({ seconds: QUESTION_SECONDS, onExpire: handleTimeout })
 
   const [letterIndex, setLetterIndex] = useState(0)
   const [lastAttemptWasWrong, setLastAttemptWasWrong] = useState(false)
@@ -42,7 +42,7 @@ export function SpeakAndSpellGame() {
 
   if (!currentWord) return null
 
-  const isRoundComplete = roundLength !== null && questionsAnsweredInRound >= roundLength
+  const isTurnComplete = turnLength !== null && questionsAnsweredInTurn >= turnLength
   const letters = currentWord.text.split('')
   const spellable = spellableIndices(letters)
   const currentDisplayIndex = spellable[letterIndex]
@@ -68,11 +68,11 @@ export function SpeakAndSpellGame() {
   }
 
   const handleNext = () => {
-    if (isRoundComplete) {
+    if (isTurnComplete) {
       finishTurn()
       return
     }
-    reset(ROUND_SECONDS)
+    reset(QUESTION_SECONDS)
     pickNextWord()
   }
 
@@ -80,10 +80,10 @@ export function SpeakAndSpellGame() {
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-10">
       <ScoreBoard />
       <p className="text-sm text-muted-foreground">
-        Pergunta {roundLength !== null ? Math.min(questionsAnsweredInRound + 1, roundLength) : questionsAnsweredInRound + 1}
-        {roundLength !== null && ` de ${roundLength}`}
+        Pergunta {turnLength !== null ? Math.min(questionsAnsweredInTurn + 1, turnLength) : questionsAnsweredInTurn + 1}
+        {turnLength !== null && ` de ${turnLength}`}
       </p>
-      <Timer remaining={remaining} total={ROUND_SECONDS} />
+      <Timer remaining={remaining} total={QUESTION_SECONDS} />
 
       <div className="flex gap-2 text-3xl font-bold uppercase tracking-widest">
         {letters.map((letter, index) => (
@@ -134,11 +134,11 @@ export function SpeakAndSpellGame() {
       )}
 
       {status !== 'jogando' && (
-        <RoundFeedback
+        <QuestionFeedback
           status={status}
           correctAnswer={currentWord.text}
           onNext={handleNext}
-          nextLabel={isRoundComplete ? 'Ver resultado da rodada' : 'Próxima palavra'}
+          nextLabel={isTurnComplete ? 'Ver resultado da rodada' : 'Próxima palavra'}
         />
       )}
     </div>

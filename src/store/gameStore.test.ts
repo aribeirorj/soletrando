@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   computeNextStreak,
-  computeRoundScore,
+  computeQuestionScore,
   computeSpellingWordScore,
   isAnswerCorrect,
   pickNextRandomWord,
@@ -47,17 +47,17 @@ describe('isAnswerCorrect', () => {
   })
 })
 
-describe('computeRoundScore', () => {
+describe('computeQuestionScore', () => {
   test('gives full base score per difficulty without a hint', () => {
-    expect(computeRoundScore('facil', false)).toBe(10)
-    expect(computeRoundScore('medio', false)).toBe(20)
-    expect(computeRoundScore('dificil', false)).toBe(30)
+    expect(computeQuestionScore('facil', false)).toBe(10)
+    expect(computeQuestionScore('medio', false)).toBe(20)
+    expect(computeQuestionScore('dificil', false)).toBe(30)
   })
 
   test('halves the score when a hint was used', () => {
-    expect(computeRoundScore('facil', true)).toBe(5)
-    expect(computeRoundScore('medio', true)).toBe(10)
-    expect(computeRoundScore('dificil', true)).toBe(15)
+    expect(computeQuestionScore('facil', true)).toBe(5)
+    expect(computeQuestionScore('medio', true)).toBe(10)
+    expect(computeQuestionScore('dificil', true)).toBe(15)
   })
 })
 
@@ -93,16 +93,16 @@ describe('useGameStore', () => {
       score: 0,
       streak: 0,
       highScore: 0,
-      hintUsedThisRound: false,
+      hintUsedThisQuestion: false,
       playerName: '',
-      roundLength: null,
-      questionsAnsweredInRound: 0,
+      turnLength: null,
+      questionsAnsweredInTurn: 0,
       correctCount: 0,
       wrongCount: 0,
     })
   })
 
-  test('startGame selects a word from the chosen difficulty and resets round state', () => {
+  test('startGame selects a word from the chosen difficulty and resets question state', () => {
     useGameStore.getState().startGame('ouvir-digitar', 'facil')
 
     const state = useGameStore.getState()
@@ -162,7 +162,7 @@ describe('useGameStore', () => {
     expect(state.score).toBe(10)
   })
 
-  test('pickNextWord starts a new round with a different word', () => {
+  test('pickNextWord moves to a new question with a different word', () => {
     useGameStore.getState().startGame('letras-embaralhadas', 'facil')
     const first = useGameStore.getState().currentWord!
     useGameStore.getState().submitAnswer(first.text)
@@ -171,7 +171,7 @@ describe('useGameStore', () => {
 
     const state = useGameStore.getState()
     expect(state.status).toBe('jogando')
-    expect(state.hintUsedThisRound).toBe(false)
+    expect(state.hintUsedThisQuestion).toBe(false)
     expect(state.currentWord?.text).not.toBe(first.text)
   })
 
@@ -229,20 +229,20 @@ describe('useGameStore', () => {
     vi.restoreAllMocks()
   })
 
-  test('startGame without a round length defaults to unlimited rounds', () => {
+  test('startGame without a turn length defaults to unlimited questions', () => {
     useGameStore.getState().startGame('ouvir-digitar', 'facil')
 
     const state = useGameStore.getState()
-    expect(state.roundLength).toBeNull()
-    expect(state.questionsAnsweredInRound).toBe(0)
+    expect(state.turnLength).toBeNull()
+    expect(state.questionsAnsweredInTurn).toBe(0)
   })
 
-  test('startGame with a round length stores it and resets the question count', () => {
+  test('startGame with a turn length stores it and resets the question count', () => {
     useGameStore.getState().startGame('ouvir-digitar', 'facil', 3)
 
     const state = useGameStore.getState()
-    expect(state.roundLength).toBe(3)
-    expect(state.questionsAnsweredInRound).toBe(0)
+    expect(state.turnLength).toBe(3)
+    expect(state.questionsAnsweredInTurn).toBe(0)
   })
 
   test('submitAnswer increments the answered question count', () => {
@@ -251,7 +251,7 @@ describe('useGameStore', () => {
 
     useGameStore.getState().submitAnswer(word.text)
 
-    expect(useGameStore.getState().questionsAnsweredInRound).toBe(1)
+    expect(useGameStore.getState().questionsAnsweredInTurn).toBe(1)
   })
 
   test('submitAnswer with a wrong answer also increments the answered question count', () => {
@@ -259,7 +259,7 @@ describe('useGameStore', () => {
 
     useGameStore.getState().submitAnswer('not-a-real-word')
 
-    expect(useGameStore.getState().questionsAnsweredInRound).toBe(1)
+    expect(useGameStore.getState().questionsAnsweredInTurn).toBe(1)
   })
 
   test('handleTimeout increments the answered question count', () => {
@@ -267,10 +267,10 @@ describe('useGameStore', () => {
 
     useGameStore.getState().handleTimeout()
 
-    expect(useGameStore.getState().questionsAnsweredInRound).toBe(1)
+    expect(useGameStore.getState().questionsAnsweredInTurn).toBe(1)
   })
 
-  test('pickNextWord does nothing once the round length has been reached', () => {
+  test('pickNextWord does nothing once the turn length has been reached', () => {
     useGameStore.getState().startGame('ouvir-digitar', 'facil', 1)
     const first = useGameStore.getState().currentWord!
     useGameStore.getState().submitAnswer(first.text)
@@ -282,15 +282,15 @@ describe('useGameStore', () => {
     expect(state.status).toBe('acertou')
   })
 
-  test('resetGame clears the round length and answered question count', () => {
+  test('resetGame clears the turn length and answered question count', () => {
     useGameStore.getState().startGame('ouvir-digitar', 'facil', 3)
     useGameStore.getState().submitAnswer('anything')
 
     useGameStore.getState().resetGame()
 
     const state = useGameStore.getState()
-    expect(state.roundLength).toBeNull()
-    expect(state.questionsAnsweredInRound).toBe(0)
+    expect(state.turnLength).toBeNull()
+    expect(state.questionsAnsweredInTurn).toBe(0)
   })
 
   test('startGame in falar-soletrar mode picks a word from the chosen category with dificil difficulty', () => {
@@ -337,7 +337,7 @@ describe('useGameStore', () => {
     expect(state.status).toBe('acertou')
     expect(state.streak).toBe(1)
     expect(state.score).toBe(letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER)
-    expect(state.questionsAnsweredInRound).toBe(1)
+    expect(state.questionsAnsweredInTurn).toBe(1)
     expect(state.correctCount).toBe(1)
     expect(state.wrongCount).toBe(0)
   })
@@ -352,7 +352,7 @@ describe('useGameStore', () => {
     expect(state.status).toBe('errou')
     expect(state.streak).toBe(0)
     expect(state.score).toBe(0)
-    expect(state.questionsAnsweredInRound).toBe(1)
+    expect(state.questionsAnsweredInTurn).toBe(1)
     expect(state.correctCount).toBe(0)
     expect(state.wrongCount).toBe(1)
   })
@@ -369,7 +369,7 @@ describe('useGameStore', () => {
     expect(localStorage.getItem('soletrando:highScore')).toBe(String(expectedScore))
   })
 
-  test('completeSpellingWord does nothing once the round has already ended', () => {
+  test('completeSpellingWord does nothing once the question has already ended', () => {
     useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
     useGameStore.getState().completeSpellingWord(true)
     const scoreAfterFirstCompletion = useGameStore.getState().score
@@ -378,7 +378,7 @@ describe('useGameStore', () => {
 
     const state = useGameStore.getState()
     expect(state.score).toBe(scoreAfterFirstCompletion)
-    expect(state.questionsAnsweredInRound).toBe(1)
+    expect(state.questionsAnsweredInTurn).toBe(1)
   })
 
   test('submitAnswer with a correct answer increments the correct count', () => {

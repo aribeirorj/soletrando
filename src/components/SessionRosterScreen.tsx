@@ -1,15 +1,21 @@
 import { useSessionStore } from '../store/sessionStore'
 import { TrophyIcon } from './icons'
+import { RulesButton } from './RulesModal'
 
 export function SessionRosterScreen() {
   const students = useSessionStore((s) => s.students)
   const startTurn = useSessionStore((s) => s.startTurn)
   const openRanking = useSessionStore((s) => s.openRanking)
   const endSession = useSessionStore((s) => s.endSession)
+  const mode = useSessionStore((s) => s.mode)
+  const difficulty = useSessionStore((s) => s.difficulty)
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-6 px-4 py-10">
-      <h2 className="text-xl font-bold">Sessão com a turma</h2>
+      <div className="flex items-center gap-2">
+        <h2 className="text-xl font-bold">Sessão com a turma</h2>
+        {mode && difficulty && <RulesButton mode={mode} difficulty={difficulty} />}
+      </div>
 
       <ul className="flex w-full flex-col gap-2">
         {students.map((student) => (

@@ -16,6 +16,7 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 | **Aluno** | `Student` | Participante de uma Sessão. Acumula `totalScore`, `correctCount` e `wrongCount` ao longo dos turnos. |
 | **Turno** | `startTurn` / `finishTurn` / `cancelTurn` | A vez de um Aluno jogar: uma sequência de `questionsPerTurn` perguntas. Ao terminar, o resultado é somado ao Aluno. Cancelar (voltar ao menu) descarta o resultado. |
 | **Ranking** | `RankingScreen`, `sortByScoreDescending` | Alunos da Sessão ordenados por pontuação total. Os 3 primeiros ganham troféu. |
+| **Regras** | `RulesButton` (`RulesModal.tsx`) | Ícone "?" na lista de alunos que abre um modal com as regras e a pontuação do Modo de Jogo da Sessão. Não existe no Jogo Individual. |
 
 ### Opções de Jogo
 

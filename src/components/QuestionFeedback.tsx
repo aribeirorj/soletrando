@@ -1,7 +1,7 @@
 import type { GameStatus } from '../types'
 import { CheckCircleIcon } from './icons'
 
-interface RoundFeedbackProps {
+interface QuestionFeedbackProps {
   status: GameStatus
   correctAnswer: string
   onNext: () => void
@@ -14,12 +14,12 @@ const MESSAGES: Record<Exclude<GameStatus, 'jogando'>, (word: string) => string>
   'tempo-esgotado': (word) => `Tempo esgotado! A palavra era: ${word}`,
 }
 
-export function RoundFeedback({
+export function QuestionFeedback({
   status,
   correctAnswer,
   onNext,
   nextLabel = 'Próxima palavra',
-}: RoundFeedbackProps) {
+}: QuestionFeedbackProps) {
   if (status === 'jogando') return null
 
   return (

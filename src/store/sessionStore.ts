@@ -46,7 +46,7 @@ let memorySession: PersistedSession | null = null
 
 interface PersistedSession {
   students: Student[]
-  questionsPerRound: number
+  questionsPerTurn: number
   mode: GameMode | null
   difficulty: Difficulty | null
   category: string[] | null
@@ -54,7 +54,7 @@ interface PersistedSession {
 
 const DEFAULT_SESSION: PersistedSession = {
   students: [],
-  questionsPerRound: 5,
+  questionsPerTurn: 5,
   mode: null,
   difficulty: null,
   category: null,
@@ -72,7 +72,13 @@ function loadSession(): PersistedSession {
   try {
     const raw = localStorage.getItem(SESSION_KEY)
     const session = raw !== null ? JSON.parse(raw) : (memorySession ?? DEFAULT_SESSION)
-    return { ...session, students: normalizeStudents(session.students) }
+    // Sessões salvas antes da renomeação usam a chave antiga `questionsPerRound`.
+    const { questionsPerRound, ...rest } = session
+    return {
+      ...rest,
+      questionsPerTurn: session.questionsPerTurn ?? questionsPerRound ?? DEFAULT_SESSION.questionsPerTurn,
+      students: normalizeStudents(session.students),
+    }
   } catch {
     return memorySession ?? DEFAULT_SESSION
   }
@@ -92,7 +98,7 @@ type SessionView = 'idle' | 'roster' | 'ranking'
 interface SessionState {
   view: SessionView
   students: Student[]
-  questionsPerRound: number
+  questionsPerTurn: number
   mode: GameMode | null
   difficulty: Difficulty | null
   category: string[] | null
@@ -100,7 +106,7 @@ interface SessionState {
 
   addStudent: (name: string) => void
   removeStudent: (id: string) => void
-  setQuestionsPerRound: (n: number) => void
+  setQuestionsPerTurn: (n: number) => void
   startSession: (mode: GameMode, difficulty: Difficulty, category?: string[] | null) => void
   startTurn: (studentId: string) => void
   finishTurn: () => void
@@ -115,7 +121,7 @@ const initialSession = loadSession()
 export const useSessionStore = create<SessionState>((set, get) => ({
   view: initialSession.students.length > 0 ? 'roster' : 'idle',
   students: initialSession.students,
-  questionsPerRound: initialSession.questionsPerRound,
+  questionsPerTurn: initialSession.questionsPerTurn,
   mode: initialSession.mode,
   difficulty: initialSession.difficulty,
   category: initialSession.category,
@@ -126,7 +132,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ students })
     saveSession({
       students,
-      questionsPerRound: get().questionsPerRound,
+      questionsPerTurn: get().questionsPerTurn,
       mode: get().mode,
       difficulty: get().difficulty,
       category: get().category,
@@ -138,18 +144,18 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ students })
     saveSession({
       students,
-      questionsPerRound: get().questionsPerRound,
+      questionsPerTurn: get().questionsPerTurn,
       mode: get().mode,
       difficulty: get().difficulty,
       category: get().category,
     })
   },
 
-  setQuestionsPerRound: (n) => {
-    set({ questionsPerRound: n })
+  setQuestionsPerTurn: (n) => {
+    set({ questionsPerTurn: n })
     saveSession({
       students: get().students,
-      questionsPerRound: n,
+      questionsPerTurn: n,
       mode: get().mode,
       difficulty: get().difficulty,
       category: get().category,
@@ -161,7 +167,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
     set({ mode, difficulty, category, view: 'roster' })
     saveSession({
       students: get().students,
-      questionsPerRound: get().questionsPerRound,
+      questionsPerTurn: get().questionsPerTurn,
       mode,
       difficulty,
       category,
@@ -169,7 +175,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
   },
 
   startTurn: (studentId) => {
-    const { mode, difficulty, category, questionsPerRound } = get()
+    const { mode, difficulty, category, questionsPerTurn } = get()
     if (!mode || !difficulty) return
     if (mode === 'falar-soletrar' && (!category || category.length === 0)) {
       // Sessão persistida antes de categorias existirem (ou dado corrompido): sem uma
@@ -179,7 +185,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       return
     }
     set({ activeStudentId: studentId })
-    useGameStore.getState().startGame(mode, difficulty, questionsPerRound, category)
+    useGameStore.getState().startGame(mode, difficulty, questionsPerTurn, category)
   },
 
   finishTurn: () => {
@@ -190,7 +196,7 @@ export const useSessionStore = create<SessionState>((set, get) => ({
       set({ students: updated, activeStudentId: null, view: 'roster' })
       saveSession({
         students: updated,
-        questionsPerRound: get().questionsPerRound,
+        questionsPerTurn: get().questionsPerTurn,
         mode: get().mode,
         difficulty: get().difficulty,
         category: get().category,

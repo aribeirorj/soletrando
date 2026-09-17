@@ -31,7 +31,7 @@ const BASE_SCORE_BY_DIFFICULTY: Record<Difficulty, number> = {
   dificil: 30,
 }
 
-export function computeRoundScore(difficulty: Difficulty, usedHint: boolean): number {
+export function computeQuestionScore(difficulty: Difficulty, usedHint: boolean): number {
   const base = BASE_SCORE_BY_DIFFICULTY[difficulty]
   return usedHint ? Math.round(base / 2) : base
 }
@@ -110,17 +110,17 @@ interface GameState {
   score: number
   streak: number
   highScore: number
-  hintUsedThisRound: boolean
+  hintUsedThisQuestion: boolean
   playerName: string
-  roundLength: number | null
-  questionsAnsweredInRound: number
+  turnLength: number | null
+  questionsAnsweredInTurn: number
   correctCount: number
   wrongCount: number
 
   startGame: (
     mode: GameMode,
     difficulty: Difficulty,
-    roundLength?: number,
+    turnLength?: number,
     category?: string[] | null,
   ) => void
   submitAnswer: (answer: string) => boolean
@@ -141,14 +141,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   score: 0,
   streak: 0,
   highScore: loadHighScore(),
-  hintUsedThisRound: false,
+  hintUsedThisQuestion: false,
   playerName: loadPlayerName(),
-  roundLength: null,
-  questionsAnsweredInRound: 0,
+  turnLength: null,
+  questionsAnsweredInTurn: 0,
   correctCount: 0,
   wrongCount: 0,
 
-  startGame: (mode, difficulty, roundLength, category = null) => {
+  startGame: (mode, difficulty, turnLength, category = null) => {
     const effectiveDifficulty = mode === 'falar-soletrar' ? SPEAK_AND_SPELL_DIFFICULTY : difficulty
     const word = pickNextRandomWord(getWordPool(mode, effectiveDifficulty, category), null)
     set({
@@ -159,9 +159,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       status: 'jogando',
       score: 0,
       streak: 0,
-      hintUsedThisRound: false,
-      roundLength: roundLength ?? null,
-      questionsAnsweredInRound: 0,
+      hintUsedThisQuestion: false,
+      turnLength: turnLength ?? null,
+      questionsAnsweredInTurn: 0,
       correctCount: 0,
       wrongCount: 0,
     })
@@ -172,11 +172,11 @@ export const useGameStore = create<GameState>((set, get) => ({
       status,
       currentWord,
       difficulty,
-      hintUsedThisRound,
+      hintUsedThisQuestion,
       score,
       streak,
       highScore,
-      questionsAnsweredInRound,
+      questionsAnsweredInTurn,
       correctCount,
       wrongCount,
     } = get()
@@ -190,21 +190,21 @@ export const useGameStore = create<GameState>((set, get) => ({
       const { score: newScore, highScore: newHighScore } = applyScoreDelta(
         score,
         highScore,
-        computeRoundScore(difficulty, hintUsedThisRound),
+        computeQuestionScore(difficulty, hintUsedThisQuestion),
       )
       set({
         status: 'acertou',
         score: newScore,
         streak: computeNextStreak(streak, true),
         highScore: newHighScore,
-        questionsAnsweredInRound: questionsAnsweredInRound + 1,
+        questionsAnsweredInTurn: questionsAnsweredInTurn + 1,
         correctCount: correctCount + 1,
       })
     } else {
       set({
         status: 'errou',
         streak: computeNextStreak(streak, false),
-        questionsAnsweredInRound: questionsAnsweredInRound + 1,
+        questionsAnsweredInTurn: questionsAnsweredInTurn + 1,
         wrongCount: wrongCount + 1,
       })
     }
@@ -213,14 +213,14 @@ export const useGameStore = create<GameState>((set, get) => ({
   },
 
   completeSpellingWord: (wasCorrect) => {
-    const { status, streak, questionsAnsweredInRound, currentWord, score, highScore, correctCount, wrongCount } = get()
+    const { status, streak, questionsAnsweredInTurn, currentWord, score, highScore, correctCount, wrongCount } = get()
     if (status !== 'jogando' || !currentWord) return
     const delta = wasCorrect ? computeSpellingWordScore(currentWord.text) : 0
     const { score: newScore, highScore: newHighScore } = applyScoreDelta(score, highScore, delta)
     set({
       status: wasCorrect ? 'acertou' : 'errou',
       streak: computeNextStreak(streak, wasCorrect),
-      questionsAnsweredInRound: questionsAnsweredInRound + 1,
+      questionsAnsweredInTurn: questionsAnsweredInTurn + 1,
       score: newScore,
       highScore: newHighScore,
       correctCount: wasCorrect ? correctCount + 1 : correctCount,
@@ -230,28 +230,28 @@ export const useGameStore = create<GameState>((set, get) => ({
 
   useHint: () => {
     if (get().status === 'jogando') {
-      set({ hintUsedThisRound: true })
+      set({ hintUsedThisQuestion: true })
     }
   },
 
   handleTimeout: () => {
-    const { status, questionsAnsweredInRound, wrongCount } = get()
+    const { status, questionsAnsweredInTurn, wrongCount } = get()
     if (status === 'jogando') {
       set({
         status: 'tempo-esgotado',
         streak: 0,
-        questionsAnsweredInRound: questionsAnsweredInRound + 1,
+        questionsAnsweredInTurn: questionsAnsweredInTurn + 1,
         wrongCount: wrongCount + 1,
       })
     }
   },
 
   pickNextWord: () => {
-    const { mode, difficulty, category, currentWord, roundLength, questionsAnsweredInRound } = get()
+    const { mode, difficulty, category, currentWord, turnLength, questionsAnsweredInTurn } = get()
     if (!mode || !difficulty) return
-    if (roundLength !== null && questionsAnsweredInRound >= roundLength) return
+    if (turnLength !== null && questionsAnsweredInTurn >= turnLength) return
     const word = pickNextRandomWord(getWordPool(mode, difficulty, category), currentWord)
-    set({ currentWord: word, status: 'jogando', hintUsedThisRound: false })
+    set({ currentWord: word, status: 'jogando', hintUsedThisQuestion: false })
   },
 
   resetGame: () => {
@@ -263,9 +263,9 @@ export const useGameStore = create<GameState>((set, get) => ({
       status: 'jogando',
       score: 0,
       streak: 0,
-      hintUsedThisRound: false,
-      roundLength: null,
-      questionsAnsweredInRound: 0,
+      hintUsedThisQuestion: false,
+      turnLength: null,
+      questionsAnsweredInTurn: 0,
       correctCount: 0,
       wrongCount: 0,
     })

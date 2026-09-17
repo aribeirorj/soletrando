@@ -8,7 +8,7 @@ interface HintButtonProps {
 }
 
 export function HintButton({ word }: HintButtonProps) {
-  const hintUsedThisRound = useGameStore((s) => s.hintUsedThisRound)
+  const hintUsedThisQuestion = useGameStore((s) => s.hintUsedThisQuestion)
   const markHintUsed = useGameStore((s) => s.useHint)
   const [isRevealed, setIsRevealed] = useState(false)
   const hint = getWordHint(word)
@@ -24,7 +24,7 @@ export function HintButton({ word }: HintButtonProps) {
       <button
         type="button"
         onClick={handleClick}
-        disabled={!hint || hintUsedThisRound}
+        disabled={!hint || hintUsedThisQuestion}
         className="flex items-center gap-1 rounded-md border px-3 py-1 text-sm hover:bg-accent disabled:opacity-50"
       >
         <LightbulbIcon width="16" height="16" /> Dica

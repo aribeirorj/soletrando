@@ -5,7 +5,7 @@ import { HintButton } from './HintButton'
 
 describe('HintButton', () => {
   beforeEach(() => {
-    useGameStore.setState({ hintUsedThisRound: false })
+    useGameStore.setState({ hintUsedThisQuestion: false })
   })
 
   test('shows the local hint and marks the hint as used', () => {
@@ -14,13 +14,13 @@ describe('HintButton', () => {
     fireEvent.click(screen.getByRole('button', { name: /dica/i }))
 
     expect(screen.getByText(/^Dica:/).textContent).toContain('mia')
-    expect(useGameStore.getState().hintUsedThisRound).toBe(true)
+    expect(useGameStore.getState().hintUsedThisQuestion).toBe(true)
   })
 
   test('does not consume the hint when the word has none', () => {
     render(<HintButton word="asdfghjkl" />)
 
     expect((screen.getByRole('button', { name: /dica/i }) as HTMLButtonElement).disabled).toBe(true)
-    expect(useGameStore.getState().hintUsedThisRound).toBe(false)
+    expect(useGameStore.getState().hintUsedThisQuestion).toBe(false)
   })
 })

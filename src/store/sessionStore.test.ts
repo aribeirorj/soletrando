@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, test } from 'vitest'
+import { beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   addTurnResultToStudent,
   createStudent,
@@ -87,7 +87,7 @@ describe('useSessionStore', () => {
     useSessionStore.setState({
       view: 'idle',
       students: [],
-      questionsPerRound: 5,
+      questionsPerTurn: 5,
       mode: null,
       difficulty: null,
       category: null,
@@ -161,10 +161,10 @@ describe('useSessionStore', () => {
     expect(state.difficulty).toBe('facil')
   })
 
-  test('startTurn starts a game round for the chosen student with the configured round length', () => {
+  test('startTurn starts a game turn for the chosen student with the configured turn length', () => {
     useSessionStore.getState().addStudent('Ana')
     useSessionStore.getState().startSession('ouvir-digitar', 'facil')
-    useSessionStore.setState({ questionsPerRound: 3 })
+    useSessionStore.setState({ questionsPerTurn: 3 })
     const studentId = useSessionStore.getState().students[0].id
 
     useSessionStore.getState().startTurn(studentId)
@@ -172,10 +172,10 @@ describe('useSessionStore', () => {
     const gameState = useGameStore.getState()
     expect(gameState.mode).toBe('ouvir-digitar')
     expect(gameState.difficulty).toBe('facil')
-    expect(gameState.roundLength).toBe(3)
+    expect(gameState.turnLength).toBe(3)
   })
 
-  test('finishTurn adds the round score, correct count and wrong count to the active student and resets the game', () => {
+  test('finishTurn adds the turn score, correct count and wrong count to the active student and resets the game', () => {
     useSessionStore.getState().addStudent('Ana')
     useSessionStore.getState().startSession('ouvir-digitar', 'facil')
     const studentId = useSessionStore.getState().students[0].id
@@ -284,5 +284,18 @@ describe('useSessionStore', () => {
     useSessionStore.getState().startTurn(studentId)
 
     expect(useSessionStore.getState().view).toBe('idle')
+  })
+})
+
+describe('sessão persistida', () => {
+  test('lê a chave antiga questionsPerRound como questionsPerTurn', async () => {
+    localStorage.setItem(
+      'soletrando:session',
+      JSON.stringify({ students: [], questionsPerRound: 7, mode: null, difficulty: null, category: null }),
+    )
+    vi.resetModules()
+    const { useSessionStore: freshStore } = await import('./sessionStore')
+    expect(freshStore.getState().questionsPerTurn).toBe(7)
+    localStorage.clear()
   })
 })

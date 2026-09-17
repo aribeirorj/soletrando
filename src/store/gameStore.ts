@@ -38,6 +38,12 @@ export function computeQuestionScore(difficulty: Difficulty, usedHint: boolean):
 
 export const SPEAK_AND_SPELL_POINTS_PER_LETTER = 10
 
+export const QUESTION_SECONDS_BY_MODE: Record<GameMode, number> = {
+  'ouvir-digitar': 20,
+  'letras-embaralhadas': 25,
+  'falar-soletrar': 30,
+}
+
 export function computeSpellingWordScore(wordText: string): number {
   const letterCount = wordText.replace(/ /g, '').length
   return letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER

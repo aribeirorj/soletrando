@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useGameStore } from '../store/gameStore'
+import { QUESTION_SECONDS_BY_MODE, useGameStore } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
 import { useCountdown } from '../hooks/useCountdown'
 import { ScoreBoard } from './ScoreBoard'
@@ -7,7 +7,7 @@ import { Timer } from './Timer'
 import { QuestionFeedback } from './QuestionFeedback'
 import { CheckCircleIcon, XCircleIcon } from './icons'
 
-const QUESTION_SECONDS = 30
+const QUESTION_SECONDS = QUESTION_SECONDS_BY_MODE['falar-soletrar']
 
 function spellableIndices(letters: string[]): number[] {
   return letters.reduce<number[]>((indices, letter, index) => {

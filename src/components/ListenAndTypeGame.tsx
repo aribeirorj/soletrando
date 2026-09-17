@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useGameStore } from '../store/gameStore'
+import { QUESTION_SECONDS_BY_MODE, useGameStore } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
 import { useSpeech } from '../hooks/useSpeech'
 import { useCountdown } from '../hooks/useCountdown'
@@ -9,7 +9,7 @@ import { HintButton } from './HintButton'
 import { QuestionFeedback } from './QuestionFeedback'
 import { SpeakerIcon } from './icons'
 
-const QUESTION_SECONDS = 20
+const QUESTION_SECONDS = QUESTION_SECONDS_BY_MODE['ouvir-digitar']
 
 export function ListenAndTypeGame() {
   const currentWord = useGameStore((s) => s.currentWord)

@@ -45,6 +45,8 @@ interface GameOptionsFieldsProps {
   selectedCategories: string[]
   onToggleCategory: (id: string) => void
   speechSupported: boolean
+  // Botão "?" de Regras ao lado do título "Modo de jogo" (Jogo Individual).
+  rulesButton?: React.ReactNode
 }
 
 export function GameOptionsFields({
@@ -55,6 +57,7 @@ export function GameOptionsFields({
   selectedCategories,
   onToggleCategory,
   speechSupported,
+  rulesButton,
 }: GameOptionsFieldsProps) {
   const isSpeakAndSpell = selectedMode === 'falar-soletrar'
   const isModeDisabled = (mode: GameMode) => mode === 'ouvir-digitar' && !speechSupported
@@ -62,10 +65,13 @@ export function GameOptionsFields({
   return (
     <>
       <div className="mt-6 flex flex-col gap-2">
-        <span className="flex items-center gap-2 text-sm font-semibold text-brand-textMain">
-          <GamepadIcon className="h-5 w-5 text-brand-blue" />
-          Modo de jogo
-        </span>
+        <div className="flex items-center gap-2">
+          <span className="flex items-center gap-2 text-sm font-semibold text-brand-textMain">
+            <GamepadIcon className="h-5 w-5 text-brand-blue" />
+            Modo de jogo
+          </span>
+          {rulesButton}
+        </div>
         <div className="flex flex-col gap-2 sm:flex-row">
           {MODE_OPTIONS.map(({ mode, label, icon }) => (
             <OptionButton

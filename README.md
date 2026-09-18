@@ -1,3 +1,15 @@
+# Soletrando
+
+Jogo para praticar a ortografia de palavras em inglês em sala de aula. O glossário e a arquitetura estão em [CONTEXT.md](CONTEXT.md).
+
+## Reconhecimento de voz (Falar e Soletrar)
+
+O modo Falar e Soletrar mostra ao aluno a letra que o microfone ouviu. O reconhecimento roda no próprio navegador, com [Vosk](https://alphacephei.com/vosk/) (`vosk-browser`), sem enviar áudio para nenhum serviço.
+
+- **Modelo:** `public/models/vosk-model-small-en-us-0.15.tar.gz` (~41 MB, licença Apache-2.0). Para gerá-lo de novo a partir do zip oficial, rode `./scripts/prepare-vosk-model.sh`.
+- **Microfone:** o navegador só libera o microfone em `https` ou em `localhost`. Aberto por `http://<IP-da-rede>`, o jogo funciona normalmente, mas sem a letra ouvida.
+- **Primeiro uso:** o modelo é baixado e extraído uma vez; depois fica guardado no navegador (IndexedDB).
+
 # React + TypeScript + Vite
 
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.

@@ -8,6 +8,8 @@ import { HeroIllustration } from './HeroIllustration'
 import { RecordBadge } from './RecordBadge'
 import { OptionButton } from './OptionButton'
 import { GameOptionsFields, MODE_SELECTED_CLASS } from './GameOptionsFields'
+import { WhatsNewNotice } from './WhatsNewNotice'
+import { RulesButton } from './RulesModal'
 import { PlayIcon, UserIcon, UsersIcon } from './icons'
 
 export function HomeScreen() {
@@ -29,6 +31,8 @@ export function HomeScreen() {
   const [selectedMode, setSelectedMode] = useState<GameMode | null>(null)
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
+  // Some ao fechar e volta na próxima visita (não é persistido).
+  const [showWhatsNew, setShowWhatsNew] = useState(true)
 
   const isSpeakAndSpell = selectedMode === 'falar-soletrar'
   const hasGameOptions =
@@ -96,6 +100,8 @@ export function HomeScreen() {
           </div>
         </div>
 
+        {playMode !== null && showWhatsNew && <WhatsNewNotice onClose={() => setShowWhatsNew(false)} />}
+
         {playMode === 'individual' && (
           <>
             <div className="mt-6 flex flex-col gap-2">
@@ -124,6 +130,16 @@ export function HomeScreen() {
               selectedCategories={selectedCategories}
               onToggleCategory={handleToggleCategory}
               speechSupported={speechSupported}
+              rulesButton={
+                selectedMode &&
+                (isSpeakAndSpell || selectedDifficulty) && (
+                  <RulesButton
+                    mode={selectedMode}
+                    difficulty={isSpeakAndSpell ? 'dificil' : selectedDifficulty!}
+                    playMode="individual"
+                  />
+                )
+              }
             />
 
             <button

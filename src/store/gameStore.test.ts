@@ -2,7 +2,7 @@ import { beforeEach, describe, expect, test, vi } from 'vitest'
 import {
   computeNextStreak,
   computeQuestionScore,
-  computeSpellingWordScore,
+  getSpellingSeconds,
   isAnswerCorrect,
   pickNextRandomWord,
   SPEAK_AND_SPELL_POINTS_PER_LETTER,
@@ -58,16 +58,6 @@ describe('computeQuestionScore', () => {
     expect(computeQuestionScore('facil', true)).toBe(5)
     expect(computeQuestionScore('medio', true)).toBe(10)
     expect(computeQuestionScore('dificil', true)).toBe(15)
-  })
-})
-
-describe('computeSpellingWordScore', () => {
-  test('multiplies the letter count by the points per letter', () => {
-    expect(computeSpellingWordScore('cat')).toBe(3 * SPEAK_AND_SPELL_POINTS_PER_LETTER)
-  })
-
-  test('does not count spaces in compound words', () => {
-    expect(computeSpellingWordScore('living room')).toBe(10 * SPEAK_AND_SPELL_POINTS_PER_LETTER)
   })
 })
 
@@ -326,47 +316,56 @@ describe('useGameStore', () => {
     expect(['spring', 'summer', 'fall', 'autumn', 'winter']).toContain(state.currentWord?.text)
   })
 
-  test('completeSpellingWord(true) awards points based on the word length and increments the streak and correct count', () => {
+  test('awardSpellingLetters adds the points of each right letter right away', () => {
     useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
-    const word = useGameStore.getState().currentWord!
-    const letterCount = word.text.replace(/ /g, '').length
+
+    useGameStore.getState().awardSpellingLetters(1)
+    expect(useGameStore.getState().score).toBe(SPEAK_AND_SPELL_POINTS_PER_LETTER)
+
+    useGameStore.getState().awardSpellingLetters(2)
+    expect(useGameStore.getState().score).toBe(3 * SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    expect(useGameStore.getState().status).toBe('jogando')
+  })
+
+  test('awardSpellingLetters updates the high score', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
+
+    useGameStore.getState().awardSpellingLetters(3)
+
+    const expectedScore = 3 * SPEAK_AND_SPELL_POINTS_PER_LETTER
+    expect(useGameStore.getState().highScore).toBe(expectedScore)
+    expect(localStorage.getItem('soletrando:highScore')).toBe(String(expectedScore))
+  })
+
+  test('completeSpellingWord(true) ends the word without adding points, which the letters already gave', () => {
+    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
+    useGameStore.getState().awardSpellingLetters(3)
 
     useGameStore.getState().completeSpellingWord(true)
 
     const state = useGameStore.getState()
     expect(state.status).toBe('acertou')
     expect(state.streak).toBe(1)
-    expect(state.score).toBe(letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER)
+    expect(state.score).toBe(3 * SPEAK_AND_SPELL_POINTS_PER_LETTER)
     expect(state.questionsAnsweredInTurn).toBe(1)
     expect(state.correctCount).toBe(1)
     expect(state.wrongCount).toBe(0)
   })
 
-  test('completeSpellingWord(false) awards no points, resets the streak and increments the wrong count', () => {
+  test('completeSpellingWord(false) keeps the points of the right letters, resets the streak and increments the wrong count', () => {
     useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
     useGameStore.setState({ streak: 3 })
+    useGameStore.getState().awardSpellingLetters(2)
 
     useGameStore.getState().completeSpellingWord(false)
 
     const state = useGameStore.getState()
     expect(state.status).toBe('errou')
     expect(state.streak).toBe(0)
-    expect(state.score).toBe(0)
+    expect(state.score).toBe(2 * SPEAK_AND_SPELL_POINTS_PER_LETTER)
     expect(state.questionsAnsweredInTurn).toBe(1)
     expect(state.correctCount).toBe(0)
     expect(state.wrongCount).toBe(1)
-  })
-
-  test('completeSpellingWord(true) updates the high score when the word score surpasses it', () => {
-    useGameStore.getState().startGame('falar-soletrar', 'facil', undefined, ['colors'])
-    const word = useGameStore.getState().currentWord!
-    const letterCount = word.text.replace(/ /g, '').length
-
-    useGameStore.getState().completeSpellingWord(true)
-
-    const expectedScore = letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER
-    expect(useGameStore.getState().highScore).toBe(expectedScore)
-    expect(localStorage.getItem('soletrando:highScore')).toBe(String(expectedScore))
   })
 
   test('completeSpellingWord does nothing once the question has already ended', () => {
@@ -421,5 +420,17 @@ describe('useGameStore', () => {
     const state = useGameStore.getState()
     expect(state.correctCount).toBe(0)
     expect(state.wrongCount).toBe(0)
+  })
+})
+
+describe('getSpellingSeconds', () => {
+  test.each([
+    ['red', 30],
+    ['yellow', 30],
+    ['september', 45],
+    ['living room', 50],
+    ['electric guitar', 70],
+  ])('"%s" gets %i seconds (5 per letter, at least 30)', (word, seconds) => {
+    expect(getSpellingSeconds(word)).toBe(seconds)
   })
 })

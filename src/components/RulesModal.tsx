@@ -2,8 +2,10 @@ import { useEffect, useState } from 'react'
 import {
   QUESTION_SECONDS_BY_MODE,
   SPEAK_AND_SPELL_POINTS_PER_LETTER,
+  SPEAK_AND_SPELL_SECONDS_PER_LETTER,
   computeQuestionScore,
 } from '../store/gameStore'
+import { MAX_ATTEMPTS } from '../store/spellingProgress'
 import type { Difficulty, GameMode } from '../types'
 import { HelpCircleIcon } from './icons'
 
@@ -16,7 +18,7 @@ const MODE_LABELS: Record<GameMode, string> = {
 const HOW_TO_PLAY: Record<GameMode, string> = {
   'ouvir-digitar': 'Ouça a palavra em inglês e digite como ela se escreve.',
   'letras-embaralhadas': 'Coloque as letras embaralhadas na ordem certa para formar a palavra.',
-  'falar-soletrar': 'Fale cada letra da palavra em voz alta. O professor marca se a letra está certa ou errada.',
+  'falar-soletrar': 'Fale em inglês cada letra da palavra. Pelo microfone, o app confere cada letra e avança sozinho.',
 }
 
 function getRules(mode: GameMode, difficulty: Difficulty): string[] {
@@ -25,10 +27,12 @@ function getRules(mode: GameMode, difficulty: Difficulty): string[] {
   if (mode === 'falar-soletrar') {
     return [
       HOW_TO_PLAY[mode],
-      seconds,
-      `Cada palavra vale ${SPEAK_AND_SPELL_POINTS_PER_LETTER} pontos por letra (espaços não contam).`,
-      'Só ganha os pontos se acertar todas as letras. Uma letra errada e a palavra vale 0.',
+      `Você tem ${SPEAK_AND_SPELL_SECONDS_PER_LETTER} segundos por letra (mínimo de ${QUESTION_SECONDS_BY_MODE[mode]} segundos por palavra).`,
+      `Cada letra tem até ${MAX_ATTEMPTS} tentativas. Sem microfone, alguém marca Correto ou Incorreto.`,
+      `Cada letra certa vale ${SPEAK_AND_SPELL_POINTS_PER_LETTER} pontos na hora (espaços não contam). Letra errada não pontua.`,
+      'A palavra só conta como acerto se todas as letras estiverem certas.',
       'Se o tempo acabar, conta como erro.',
+      'Ao terminar a palavra, o jogo passa sozinho para a próxima.',
     ]
   }
 
@@ -45,9 +49,15 @@ function getRules(mode: GameMode, difficulty: Difficulty): string[] {
 type RulesButtonProps = {
   mode: GameMode
   difficulty: Difficulty
+  playMode?: 'individual' | 'turma'
 }
 
-export function RulesButton({ mode, difficulty }: RulesButtonProps) {
+const SCORE_DESTINATION: Record<NonNullable<RulesButtonProps['playMode']>, string> = {
+  individual: 'Os pontos somam no seu placar e contam para o Recorde.',
+  turma: 'Os pontos de cada turno somam no total do aluno e aparecem no Ranking.',
+}
+
+export function RulesButton({ mode, difficulty, playMode = 'turma' }: RulesButtonProps) {
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
@@ -91,7 +101,7 @@ export function RulesButton({ mode, difficulty }: RulesButtonProps) {
                 <li key={rule}>{rule}</li>
               ))}
               <li>Acertos seguidos aumentam a Sequência, mas não dão pontos extras.</li>
-              <li>Os pontos de cada turno somam no total do aluno e aparecem no Ranking.</li>
+              <li>{SCORE_DESTINATION[playMode]}</li>
             </ul>
             <button
               type="button"

@@ -44,9 +44,12 @@ export const QUESTION_SECONDS_BY_MODE: Record<GameMode, number> = {
   'falar-soletrar': 30,
 }
 
-export function computeSpellingWordScore(wordText: string): number {
+export const SPEAK_AND_SPELL_SECONDS_PER_LETTER = 5
+
+// Falar e Soletrar: 5 s por letra, sem ficar abaixo do tempo mínimo do modo.
+export function getSpellingSeconds(wordText: string): number {
   const letterCount = wordText.replace(/ /g, '').length
-  return letterCount * SPEAK_AND_SPELL_POINTS_PER_LETTER
+  return Math.max(QUESTION_SECONDS_BY_MODE['falar-soletrar'], letterCount * SPEAK_AND_SPELL_SECONDS_PER_LETTER)
 }
 
 export function computeNextStreak(currentStreak: number, wasCorrect: boolean): number {
@@ -130,6 +133,7 @@ interface GameState {
     category?: string[] | null,
   ) => void
   submitAnswer: (answer: string) => boolean
+  awardSpellingLetters: (count: number) => void
   completeSpellingWord: (wasCorrect: boolean) => void
   useHint: () => void
   handleTimeout: () => void
@@ -218,17 +222,20 @@ export const useGameStore = create<GameState>((set, get) => ({
     return correct
   },
 
+  // Falar e Soletrar: cada letra certa pontua na hora, mesmo que outra letra da palavra erre.
+  awardSpellingLetters: (count) => {
+    const { score, highScore } = get()
+    set(applyScoreDelta(score, highScore, count * SPEAK_AND_SPELL_POINTS_PER_LETTER))
+  },
+
+  // Fecha a palavra (os pontos já vieram por letra): acerto só se nenhuma letra errou.
   completeSpellingWord: (wasCorrect) => {
-    const { status, streak, questionsAnsweredInTurn, currentWord, score, highScore, correctCount, wrongCount } = get()
+    const { status, streak, questionsAnsweredInTurn, currentWord, correctCount, wrongCount } = get()
     if (status !== 'jogando' || !currentWord) return
-    const delta = wasCorrect ? computeSpellingWordScore(currentWord.text) : 0
-    const { score: newScore, highScore: newHighScore } = applyScoreDelta(score, highScore, delta)
     set({
       status: wasCorrect ? 'acertou' : 'errou',
       streak: computeNextStreak(streak, wasCorrect),
       questionsAnsweredInTurn: questionsAnsweredInTurn + 1,
-      score: newScore,
-      highScore: newHighScore,
       correctCount: wasCorrect ? correctCount + 1 : correctCount,
       wrongCount: wasCorrect ? wrongCount : wrongCount + 1,
     })

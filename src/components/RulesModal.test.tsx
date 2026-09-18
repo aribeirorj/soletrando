@@ -41,8 +41,13 @@ describe('RulesButton', () => {
     const dialog = openRules()
 
     expect(dialog.textContent).toContain('Falar e Soletrar')
-    expect(dialog.textContent).toContain('30 segundos')
-    expect(dialog.textContent).toContain('10 pontos por letra')
+    expect(dialog.textContent).toContain('5 segundos por letra')
+    expect(dialog.textContent).toContain('mínimo de 30 segundos')
+    expect(dialog.textContent).toContain('3 tentativas')
+    expect(dialog.textContent).toContain('Correto ou Incorreto')
+    expect(dialog.textContent).toContain('passa sozinho para a próxima')
+    expect(dialog.textContent).toContain('Cada letra certa vale 10 pontos')
+    expect(dialog.textContent).not.toContain('a palavra vale 0')
     expect(dialog.textContent).not.toContain('Dica')
   })
 
@@ -56,5 +61,24 @@ describe('RulesButton', () => {
     openRules()
     fireEvent.keyDown(document, { key: 'Escape' })
     expect(screen.queryByRole('dialog')).toBeNull()
+  })
+})
+
+describe('RulesButton — Jogo Individual', () => {
+  test('explains that the points go to the player score and the record', () => {
+    render(<RulesButton mode="falar-soletrar" difficulty="dificil" playMode="individual" />)
+
+    const dialog = openRules()
+
+    expect(dialog.textContent).toContain('Recorde')
+    expect(dialog.textContent).not.toContain('Ranking')
+  })
+
+  test('class play keeps talking about the turn and the ranking', () => {
+    render(<RulesButton mode="falar-soletrar" difficulty="dificil" />)
+
+    const dialog = openRules()
+
+    expect(dialog.textContent).toContain('Ranking')
   })
 })

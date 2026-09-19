@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useGameStore } from '../store/gameStore'
-import { getWordHint } from '../data/wordHints'
+import { getLanguage } from '../language/current'
 import { LightbulbIcon } from './icons'
 
 interface HintButtonProps {
@@ -11,7 +11,7 @@ export function HintButton({ word }: HintButtonProps) {
   const hintUsedThisQuestion = useGameStore((s) => s.hintUsedThisQuestion)
   const markHintUsed = useGameStore((s) => s.useHint)
   const [isRevealed, setIsRevealed] = useState(false)
-  const hint = getWordHint(word)
+  const hint = getLanguage().getHint(word)
 
   const handleClick = () => {
     if (!hint) return

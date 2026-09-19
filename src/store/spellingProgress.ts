@@ -6,6 +6,9 @@ import { matchesExpectedLetter } from '../speech/letterNames'
 // minúsculas e sem espaços.
 export const MAX_ATTEMPTS = 3
 
+// Compara a Letra ouvida com a esperada. Padrão: a do Spelling Bee (com a Tolerância ao sotaque).
+export type LetterMatcher = (heard: string, expected: string) => boolean
+
 export type SpellingFeedback =
   | { kind: 'correct'; letter: string }
   | { kind: 'retry'; heard: string; attempt: number }
@@ -25,7 +28,7 @@ export interface SpellingProgressState {
 }
 
 export type SpellingProgressAction =
-  | { type: 'attempt'; letters: string[]; spellable: string[] }
+  | { type: 'attempt'; letters: string[]; spellable: string[]; matches?: LetterMatcher }
   | { type: 'mark'; correct: boolean; spellable: string[] }
   | { type: 'reset' }
 
@@ -55,11 +58,16 @@ function failLetter(state: SpellingProgressState, heard: string | null, expected
   }
 }
 
-function attemptLetter(state: SpellingProgressState, heard: string, spellable: string[]): SpellingProgressState {
+function attemptLetter(
+  state: SpellingProgressState,
+  heard: string,
+  spellable: string[],
+  matches: LetterMatcher,
+): SpellingProgressState {
   if (state.finished) return state
 
   const expected = spellable[state.letterIndex]
-  if (matchesExpectedLetter(heard, expected)) {
+  if (matches(heard, expected)) {
     return {
       ...state,
       letterIndex: state.letterIndex + 1,
@@ -84,7 +92,7 @@ export function spellingProgressReducer(
   switch (action.type) {
     case 'attempt':
       return action.letters.reduce((current, letter) => {
-        const next = attemptLetter(current, letter, action.spellable)
+        const next = attemptLetter(current, letter, action.spellable, action.matches ?? matchesExpectedLetter)
         return next === current ? current : withFinished(next, action.spellable)
       }, state)
     case 'mark': {

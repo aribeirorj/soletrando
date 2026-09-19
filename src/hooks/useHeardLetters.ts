@@ -4,6 +4,7 @@ import {
   isRecognitionUnavailable,
   startLetterRecognition,
   type LetterRecognitionStatus,
+  type RecognizerConfig,
 } from '../speech/letterRecognition'
 
 // Depois que o app termina de falar, o som ainda chega ao microfone por um instante.
@@ -18,6 +19,8 @@ export interface UseHeardLettersOptions {
   enabled: boolean
   // Cada resultado final com letras, enquanto `active`.
   onFinal?: (letters: string[]) => void
+  // Modelo e vocabulário do Idioma; sem ele, o do Spelling Bee.
+  recognizer?: RecognizerConfig
 }
 
 export interface UseHeardLettersResult {
@@ -33,6 +36,7 @@ export function useHeardLetters({
   muted,
   enabled,
   onFinal,
+  recognizer,
 }: UseHeardLettersOptions): UseHeardLettersResult {
   const [status, setStatus] = useState<LetterRecognitionStatus>('idle')
   const [state, dispatch] = useReducer(heardLettersReducer, INITIAL_HEARD_LETTERS)
@@ -62,19 +66,22 @@ export function useHeardLetters({
   useEffect(() => {
     if (!enabled) return
     try {
-      return startLetterRecognition({
-        onStatusChange: setStatus,
-        onLettersHeard: (letters, isFinal) => {
-          const isActive = activeRef.current
-          dispatch({ type: isFinal ? 'final' : 'partial', letters, active: isActive })
-          if (isFinal && isActive && letters.length > 0) onFinalRef.current?.(letters)
+      return startLetterRecognition(
+        {
+          onStatusChange: setStatus,
+          onLettersHeard: (letters, isFinal) => {
+            const isActive = activeRef.current
+            dispatch({ type: isFinal ? 'final' : 'partial', letters, active: isActive })
+            if (isFinal && isActive && letters.length > 0) onFinalRef.current?.(letters)
+          },
+          isMuted: () => mutedRef.current,
         },
-        isMuted: () => mutedRef.current,
-      })
+        recognizer,
+      )
     } catch {
       setStatus('error')
     }
-  }, [enabled])
+  }, [enabled, recognizer])
 
   useEffect(() => {
     dispatch({ type: 'question-changed' })

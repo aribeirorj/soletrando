@@ -25,19 +25,36 @@ export interface LetterRecognitionHandlers {
   isMuted?: () => boolean
 }
 
+// Reconhecimento de um Idioma: o modelo Vosk, o vocabulário que ele pode ouvir e como
+// transformar o texto reconhecido em Letras.
+export interface RecognizerConfig {
+  modelUrl: string
+  grammar: string
+  parse: (text: string) => string[]
+}
+
 // Gerado por scripts/prepare-vosk-model.sh. O vosk-browser guarda o modelo extraído
 // no IndexedDB indexado por esta URL: mudar o nome força um novo download.
 const MODEL_URL = `${import.meta.env.BASE_URL}models/vosk-model-small-en-us-0.15.tar.gz`
 
-let modelPromise: Promise<Model> | null = null
+export const ENGLISH_RECOGNIZER: RecognizerConfig = {
+  modelUrl: MODEL_URL,
+  grammar: LETTER_GRAMMAR,
+  parse: parseHeardLetters,
+}
+
+// Um modelo por URL, carregado uma vez e mantido em memória.
+const modelPromises = new Map<string, Promise<Model>>()
 
 // Não usa createModel() do vosk-browser: ele nunca rejeita quando o download falha.
-function loadModel(): Promise<Model> {
-  modelPromise ??= import('vosk-browser')
+function loadModel(url: string): Promise<Model> {
+  const cached = modelPromises.get(url)
+  if (cached) return cached
+  const modelPromise = import('vosk-browser')
     .then(
       ({ Model }) =>
         new Promise<Model>((resolve, reject) => {
-          const model = new Model(MODEL_URL, -1)
+          const model = new Model(url, -1)
           const fail = (reason: string) => {
             model.terminate()
             reject(new Error(reason))
@@ -52,9 +69,10 @@ function loadModel(): Promise<Model> {
         }),
     )
     .catch((error: unknown) => {
-      modelPromise = null
+      modelPromises.delete(url)
       throw error
     })
+  modelPromises.set(url, modelPromise)
   return modelPromise
 }
 
@@ -82,9 +100,14 @@ function debug(kind: string, text: string) {
 
 // Liga o microfone ao reconhecedor. Devolve a função que desfaz tudo, exceto o modelo,
 // que fica em memória para a próxima vez.
-function listen(model: Model, stream: MediaStream, handlers: LetterRecognitionHandlers): () => void {
+function listen(
+  model: Model,
+  stream: MediaStream,
+  handlers: LetterRecognitionHandlers,
+  config: RecognizerConfig,
+): () => void {
   const context = new AudioContext()
-  const recognizer = new model.KaldiRecognizer(context.sampleRate, LETTER_GRAMMAR)
+  const recognizer = new model.KaldiRecognizer(context.sampleRate, config.grammar)
   let active = true
   let lastPartial = ''
 
@@ -94,14 +117,14 @@ function listen(model: Model, stream: MediaStream, handlers: LetterRecognitionHa
     if (!partial || partial === lastPartial) return
     lastPartial = partial
     debug('parcial', partial)
-    const letters = parseHeardLetters(partial)
+    const letters = config.parse(partial)
     if (letters.length > 0) handlers.onLettersHeard(letters, false)
   })
   recognizer.on('result', (message) => {
     if (!active || message.event !== 'result') return
     lastPartial = ''
     debug('final', message.result.text)
-    handlers.onLettersHeard(parseHeardLetters(message.result.text), true)
+    handlers.onLettersHeard(config.parse(message.result.text), true)
   })
   recognizer.on('error', (message) => {
     if (message.event === 'error') debug('erro', message.error)
@@ -140,7 +163,10 @@ function listen(model: Model, stream: MediaStream, handlers: LetterRecognitionHa
   }
 }
 
-export function startLetterRecognition(handlers: LetterRecognitionHandlers): () => void {
+export function startLetterRecognition(
+  handlers: LetterRecognitionHandlers,
+  config: RecognizerConfig = ENGLISH_RECOGNIZER,
+): () => void {
   if (!isLetterRecognitionSupported()) {
     handlers.onStatusChange('unsupported')
     return () => {}
@@ -153,7 +179,7 @@ export function startLetterRecognition(handlers: LetterRecognitionHandlers): () 
 
   // Modelo e microfone em paralelo: o pedido de permissão aparece enquanto o modelo baixa.
   void Promise.allSettled([
-    loadModel(),
+    loadModel(config.modelUrl),
     navigator.mediaDevices.getUserMedia({
       audio: { echoCancellation: true, noiseSuppression: true, channelCount: 1 },
     }),
@@ -168,7 +194,7 @@ export function startLetterRecognition(handlers: LetterRecognitionHandlers): () 
     }
 
     try {
-      stopListening = listen(model.value, stream, handlers)
+      stopListening = listen(model.value, stream, handlers, config)
       handlers.onStatusChange('listening')
     } catch (error) {
       stream.getTracks().forEach((track) => track.stop())

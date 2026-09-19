@@ -1,4 +1,4 @@
-import { SPEAK_AND_SPELL_CATEGORIES } from '../data/speakAndSpellCategories'
+import { getLanguage } from '../language/current'
 import { OptionButton } from './OptionButton'
 import type { Difficulty, GameMode } from '../types'
 import { BarChartIcon, GamepadIcon, MicrophoneIcon, ShuffleIcon, SpeakerIcon, SproutIcon, StarIcon } from './icons'
@@ -100,7 +100,7 @@ export function GameOptionsFields({
           </span>
           <p className="text-xs text-brand-grayText">Selecione uma ou mais categorias.</p>
           <div className="grid auto-rows-fr grid-cols-2 gap-2 sm:grid-cols-3">
-            {SPEAK_AND_SPELL_CATEGORIES.map(({ id, label }) => (
+            {getLanguage().categories.map(({ id, label }) => (
               <OptionButton
                 key={id}
                 selected={selectedCategories.includes(id)}

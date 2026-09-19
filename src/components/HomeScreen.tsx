@@ -3,7 +3,7 @@ import { useGameStore } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
 import { useSpeech } from '../hooks/useSpeech'
 import type { Difficulty, GameMode } from '../types'
-import logoJogo from '../assets/logo-jogo.png'
+import { getLanguage } from '../language/current'
 import { HeroIllustration } from './HeroIllustration'
 import { RecordBadge } from './RecordBadge'
 import { OptionButton } from './OptionButton'
@@ -17,7 +17,8 @@ export function HomeScreen() {
   const playerName = useGameStore((s) => s.playerName)
   const setPlayerName = useGameStore((s) => s.setPlayerName)
   const startGame = useGameStore((s) => s.startGame)
-  const { isSupported: speechSupported } = useSpeech()
+  const language = getLanguage()
+  const { isSupported: speechSupported } = useSpeech(language.speechLang)
 
   const students = useSessionStore((s) => s.students)
   const questionsPerTurn = useSessionStore((s) => s.questionsPerTurn)
@@ -76,7 +77,11 @@ export function HomeScreen() {
 
       <div className="mx-auto w-full max-w-2xl rounded-[28px] border border-brand-blue/10 bg-white p-6 shadow-[0_20px_50px_rgba(11,58,130,0.12)] sm:p-9">
         <div className="flex flex-col items-center gap-3">
-          <img src={logoJogo} alt="Jogo de Soletrar" className="w-full max-w-[380px]" />
+          {language.logo ? (
+            <img src={language.logo.src} alt={language.logo.alt} className="w-full max-w-[380px]" />
+          ) : (
+            <h2 className="text-5xl font-extrabold tracking-tight text-brand-blueDark sm:text-6xl">{language.appName}</h2>
+          )}
           <RecordBadge value={highScore} playerName={playerName} />
         </div>
 
@@ -100,7 +105,7 @@ export function HomeScreen() {
           </div>
         </div>
 
-        {playMode !== null && showWhatsNew && <WhatsNewNotice onClose={() => setShowWhatsNew(false)} />}
+        {playMode !== null && language.showWhatsNew && showWhatsNew && <WhatsNewNotice onClose={() => setShowWhatsNew(false)} />}
 
         {playMode === 'individual' && (
           <>

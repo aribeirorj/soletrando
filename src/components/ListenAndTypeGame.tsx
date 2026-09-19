@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { QUESTION_SECONDS_BY_MODE, useGameStore } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
 import { useSpeech } from '../hooks/useSpeech'
+import { getLanguage } from '../language/current'
 import { useCountdown } from '../hooks/useCountdown'
 import { ScoreBoard } from './ScoreBoard'
 import { Timer } from './Timer'
@@ -21,7 +22,8 @@ export function ListenAndTypeGame() {
   const questionsAnsweredInTurn = useGameStore((s) => s.questionsAnsweredInTurn)
   const finishTurn = useSessionStore((s) => s.finishTurn)
 
-  const { isSupported, speak } = useSpeech()
+  const language = getLanguage()
+  const { isSupported, speak } = useSpeech(language.speechLang)
   const [inputValue, setInputValue] = useState('')
   const { remaining, reset } = useCountdown({ seconds: QUESTION_SECONDS, onExpire: handleTimeout })
 
@@ -80,7 +82,7 @@ export function ListenAndTypeGame() {
           disabled={status !== 'jogando'}
           onChange={(e) => setInputValue(e.target.value)}
           className="flex-1 rounded-md border px-3 py-2"
-          placeholder="Digite a palavra em inglês"
+          placeholder={language.texts.typeWordPlaceholder}
           autoFocus
         />
         <button

@@ -1,5 +1,6 @@
 import { create } from 'zustand'
 import { useGameStore } from './gameStore'
+import { storageKey } from '../language/current'
 import type { Difficulty, GameMode } from '../types'
 
 export interface Student {
@@ -41,7 +42,7 @@ export function sortByScoreDescending(students: Student[]): Student[] {
   return [...students].sort((a, b) => b.totalScore - a.totalScore)
 }
 
-const SESSION_KEY = 'soletrando:session'
+const SESSION_KEY = 'session'
 let memorySession: PersistedSession | null = null
 
 interface PersistedSession {
@@ -70,7 +71,7 @@ function normalizeStudents(students: Student[]): Student[] {
 
 function loadSession(): PersistedSession {
   try {
-    const raw = localStorage.getItem(SESSION_KEY)
+    const raw = localStorage.getItem(storageKey(SESSION_KEY))
     const session = raw !== null ? JSON.parse(raw) : (memorySession ?? DEFAULT_SESSION)
     // Sessões salvas antes da renomeação usam a chave antiga `questionsPerRound`.
     const { questionsPerRound, ...rest } = session
@@ -87,7 +88,7 @@ function loadSession(): PersistedSession {
 function saveSession(session: PersistedSession): void {
   memorySession = session
   try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(session))
+    localStorage.setItem(storageKey(SESSION_KEY), JSON.stringify(session))
   } catch {
     // fallback silencioso: valor já retido em memorySession
   }

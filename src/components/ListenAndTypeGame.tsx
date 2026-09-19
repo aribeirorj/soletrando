@@ -12,6 +12,14 @@ import { SpeakerIcon } from './icons'
 
 const QUESTION_SECONDS = QUESTION_SECONDS_BY_MODE['ouvir-digitar']
 
+// Sem isso, o teclado do celular acentua e completa a palavra pelo aluno.
+const STRICT_TYPING_ATTRIBUTES = {
+  autoCorrect: 'off',
+  autoCapitalize: 'off',
+  autoComplete: 'off',
+  spellCheck: false,
+} as const
+
 export function ListenAndTypeGame() {
   const currentWord = useGameStore((s) => s.currentWord)
   const status = useGameStore((s) => s.status)
@@ -83,6 +91,7 @@ export function ListenAndTypeGame() {
           onChange={(e) => setInputValue(e.target.value)}
           className="flex-1 rounded-md border px-3 py-2"
           placeholder={language.texts.typeWordPlaceholder}
+          {...(language.strictTypingInput && STRICT_TYPING_ATTRIBUTES)}
           autoFocus
         />
         <button

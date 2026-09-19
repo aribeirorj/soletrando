@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { QUESTION_SECONDS_BY_MODE, useGameStore } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
 import { useSpeech } from '../hooks/useSpeech'
@@ -34,6 +34,16 @@ export function ListenAndTypeGame() {
   const { isSupported, speak } = useSpeech(language.speechLang)
   const [inputValue, setInputValue] = useState('')
   const { remaining, reset } = useCountdown({ seconds: QUESTION_SECONDS, onExpire: handleTimeout })
+  const inputRef = useRef<HTMLInputElement>(null)
+  // Onde o cursor fica depois de uma Tecla de acento (o React o levaria para o fim).
+  const cursorAfterAccentRef = useRef<number | null>(null)
+
+  useLayoutEffect(() => {
+    const cursor = cursorAfterAccentRef.current
+    if (cursor === null) return
+    cursorAfterAccentRef.current = null
+    inputRef.current?.setSelectionRange(cursor, cursor)
+  }, [inputValue])
 
   useEffect(() => {
     if (currentWord && isSupported) {
@@ -45,6 +55,16 @@ export function ListenAndTypeGame() {
   if (!currentWord) return null
 
   const isTurnComplete = turnLength !== null && questionsAnsweredInTurn >= turnLength
+
+  // Troca o trecho selecionado (ou insere no cursor) pela letra acentuada.
+  const insertAccent = (letter: string) => {
+    const input = inputRef.current
+    const start = input?.selectionStart ?? inputValue.length
+    const end = input?.selectionEnd ?? inputValue.length
+    cursorAfterAccentRef.current = start + letter.length
+    setInputValue(inputValue.slice(0, start) + letter + inputValue.slice(end))
+    input?.focus()
+  }
 
   const handleNext = () => {
     if (isTurnComplete) {
@@ -85,6 +105,7 @@ export function ListenAndTypeGame() {
         }}
       >
         <input
+          ref={inputRef}
           type="text"
           value={inputValue}
           disabled={status !== 'jogando'}
@@ -102,6 +123,25 @@ export function ListenAndTypeGame() {
           Verificar
         </button>
       </form>
+
+      {language.accentButtons.length > 0 && (
+        <div role="group" aria-label="Letras com acento" className="flex flex-wrap justify-center gap-2">
+          {language.accentButtons.map((letter) => (
+            <button
+              key={letter}
+              type="button"
+              title={`Inserir ${letter}`}
+              disabled={status !== 'jogando'}
+              // Não tira o foco do campo, para o cursor continuar onde o aluno estava.
+              onMouseDown={(e) => e.preventDefault()}
+              onClick={() => insertAccent(letter)}
+              className="h-10 w-10 rounded-md border text-lg font-semibold hover:bg-accent disabled:opacity-50"
+            >
+              {letter}
+            </button>
+          ))}
+        </div>
+      )}
 
       <HintButton key={currentWord.text} word={currentWord.text} />
 

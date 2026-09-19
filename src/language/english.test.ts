@@ -42,8 +42,14 @@ describe('english (Spelling Bee)', () => {
     expect(english.homeNotice).toBe('novidades')
   })
 
-  test('keeps the current texts', () => {
-    expect(english.texts.typeWordPlaceholder).toBe('Digite a palavra em inglês')
+  test('labels in English, important information in Portuguese', () => {
+    expect(english.texts.typeWordPlaceholder).toBe('Type the word')
+    expect(english.labels.playSolo).toBe('Play Solo')
+    expect(english.labels.modes['falar-soletrar']).toBe('Speak and Spell')
+    expect(english.labels.rankPosition(1)).toBe('1st')
+    expect(english.labels.rankPosition(12)).toBe('12th')
+    expect(english.labels.rankPosition(23)).toBe('23rd')
+    expect(english.categories[0].label).toBe('Colors')
     expect(english.texts.speakInstruction).toBe('Fale em inglês a letra destacada.')
     expect(english.texts.howToPlay['ouvir-digitar']).toBe('Ouça a palavra em inglês e digite como ela se escreve.')
   })

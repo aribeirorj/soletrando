@@ -8,6 +8,7 @@ import { SessionRosterScreen } from './components/SessionRosterScreen'
 import { RankingScreen } from './components/RankingScreen'
 import { useGameStore } from './store/gameStore'
 import { useSessionStore } from './store/sessionStore'
+import { getLanguage } from './language/current'
 
 function App() {
   const mode = useGameStore((s) => s.mode)
@@ -35,7 +36,7 @@ function App() {
             onClick={handleBackToMenu}
             className="text-sm text-muted-foreground underline"
           >
-            Voltar ao menu
+            {getLanguage().labels.backToMenu}
           </button>
         </div>
       )}

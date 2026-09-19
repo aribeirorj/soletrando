@@ -73,8 +73,8 @@ export function RulesButton({ mode, difficulty, playMode = 'turma' }: RulesButto
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        aria-label="Ver regras"
-        title="Ver regras"
+        aria-label={getLanguage().labels.seeRules}
+        title={getLanguage().labels.seeRules}
         className="rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       >
         <HelpCircleIcon width={24} height={24} />

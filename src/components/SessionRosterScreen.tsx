@@ -1,4 +1,5 @@
 import { useSessionStore } from '../store/sessionStore'
+import { getLanguage } from '../language/current'
 import { TrophyIcon } from './icons'
 import { RulesButton } from './RulesModal'
 
@@ -9,11 +10,12 @@ export function SessionRosterScreen() {
   const endSession = useSessionStore((s) => s.endSession)
   const mode = useSessionStore((s) => s.mode)
   const difficulty = useSessionStore((s) => s.difficulty)
+  const labels = getLanguage().labels
 
   return (
     <div className="mx-auto flex max-w-md flex-col items-center gap-6 px-4 py-10">
       <div className="flex items-center gap-2">
-        <h2 className="text-xl font-bold">Sessão com a turma</h2>
+        <h2 className="text-xl font-bold">{labels.classSession}</h2>
         {mode && difficulty && <RulesButton mode={mode} difficulty={difficulty} />}
       </div>
 
@@ -26,9 +28,9 @@ export function SessionRosterScreen() {
             <div>
               <p className="font-semibold">{student.name}</p>
               <p className="text-sm text-muted-foreground">
-                {student.totalScore} pontos ·{' '}
-                <span className="font-semibold text-green-600">{student.correctCount} acertos</span> ·{' '}
-                <span className="font-semibold text-brand-red">{student.wrongCount} erros</span>
+                {labels.pointsCount(student.totalScore)} ·{' '}
+                <span className="font-semibold text-green-600">{labels.correctCount(student.correctCount)}</span> ·{' '}
+                <span className="font-semibold text-brand-red">{labels.wrongCount(student.wrongCount)}</span>
               </p>
             </div>
             <button
@@ -36,7 +38,7 @@ export function SessionRosterScreen() {
               onClick={() => startTurn(student.id)}
               className="rounded-md bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground hover:opacity-90"
             >
-              Jogar
+              {labels.play}
             </button>
           </li>
         ))}
@@ -48,11 +50,11 @@ export function SessionRosterScreen() {
         className="flex w-full items-center justify-center gap-2 rounded-md border px-4 py-2 font-semibold hover:bg-accent"
       >
         <TrophyIcon className="text-brand-yellowDark" />
-        Ver ranking
+        {labels.seeRanking}
       </button>
 
       <button type="button" onClick={endSession} className="text-sm text-muted-foreground underline">
-        Encerrar sessão
+        {labels.endSession}
       </button>
     </div>
   )

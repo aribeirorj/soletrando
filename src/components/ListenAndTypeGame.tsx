@@ -31,6 +31,7 @@ export function ListenAndTypeGame() {
   const finishTurn = useSessionStore((s) => s.finishTurn)
 
   const language = getLanguage()
+  const labels = language.labels
   const { isSupported, speak } = useSpeech(language.speechLang)
   const [inputValue, setInputValue] = useState('')
   const { remaining, reset } = useCountdown({ seconds: QUESTION_SECONDS, onExpire: handleTimeout })
@@ -80,8 +81,10 @@ export function ListenAndTypeGame() {
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-10">
       <ScoreBoard />
       <p className="text-sm text-muted-foreground">
-        Pergunta {turnLength !== null ? Math.min(questionsAnsweredInTurn + 1, turnLength) : questionsAnsweredInTurn + 1}
-        {turnLength !== null && ` de ${turnLength}`}
+        {labels.question(
+          turnLength !== null ? Math.min(questionsAnsweredInTurn + 1, turnLength) : questionsAnsweredInTurn + 1,
+          turnLength,
+        )}
       </p>
       <Timer remaining={remaining} total={QUESTION_SECONDS} />
 
@@ -91,7 +94,7 @@ export function ListenAndTypeGame() {
           onClick={() => speak(currentWord.text)}
           className="flex items-center gap-2 rounded-md border px-4 py-2 text-lg"
         >
-          <SpeakerIcon /> Repetir
+          <SpeakerIcon /> {labels.repeat}
         </button>
       ) : (
         <p className="text-sm text-muted-foreground">Narração não disponível neste navegador.</p>
@@ -120,7 +123,7 @@ export function ListenAndTypeGame() {
           disabled={status !== 'jogando'}
           className="rounded-md bg-primary px-4 py-2 text-primary-foreground disabled:opacity-50"
         >
-          Verificar
+          {labels.check}
         </button>
       </form>
 
@@ -150,7 +153,7 @@ export function ListenAndTypeGame() {
           status={status}
           correctAnswer={currentWord.text}
           onNext={handleNext}
-          nextLabel={isTurnComplete ? 'Ver resultado da rodada' : 'Próxima palavra'}
+          nextLabel={isTurnComplete ? labels.seeTurnResult : labels.nextWord}
         />
       )}
     </div>

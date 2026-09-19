@@ -58,9 +58,13 @@ describe('Banco de Palavras do Soletrando — Categorias', () => {
   test('starts with the same themes as the Spelling Bee, in the same order', () => {
     const shared = PT_SPEAK_AND_SPELL_CATEGORIES.slice(0, SPEAK_AND_SPELL_CATEGORIES.length)
 
-    expect(shared.map(({ id, label }) => ({ id, label }))).toEqual(
-      SPEAK_AND_SPELL_CATEGORIES.map(({ id, label }) => ({ id, label })),
-    )
+    expect(shared.map(({ id }) => id)).toEqual(SPEAK_AND_SPELL_CATEGORIES.map(({ id }) => id))
+  })
+
+  test('names the themes in Portuguese', () => {
+    expect(PT_SPEAK_AND_SPELL_CATEGORIES.slice(0, 3).map(({ label }) => label)).toEqual([
+      'Cores', 'Estações do Ano', 'Dias da Semana',
+    ])
   })
 
   test('Ciência e Informação comes after them, only in the Soletrando', () => {

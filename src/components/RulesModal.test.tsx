@@ -3,7 +3,7 @@ import { describe, expect, test } from 'vitest'
 import { RulesButton } from './RulesModal'
 
 function openRules() {
-  fireEvent.click(screen.getByRole('button', { name: /regras/i }))
+  fireEvent.click(screen.getByRole('button', { name: /rules/i }))
   return screen.getByRole('dialog')
 }
 

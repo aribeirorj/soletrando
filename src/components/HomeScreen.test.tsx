@@ -2,7 +2,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import { describe, expect, test } from 'vitest'
 import { HomeScreen } from './HomeScreen'
 
-function choose(label: 'Jogar Individual' | 'Jogar com a Turma') {
+function choose(label: 'Play Solo' | 'Play with the Class') {
   fireEvent.click(screen.getByRole('button', { name: label }))
 }
 
@@ -14,7 +14,7 @@ describe('HomeScreen — novidades', () => {
   test('shows the news when playing with the class', () => {
     render(<HomeScreen />)
 
-    choose('Jogar com a Turma')
+    choose('Play with the Class')
 
     const text = news()?.textContent ?? ''
     expect(text).toContain('corrige sozinho')
@@ -29,7 +29,7 @@ describe('HomeScreen — novidades', () => {
   test('also shows the news in individual play', () => {
     render(<HomeScreen />)
 
-    choose('Jogar Individual')
+    choose('Play Solo')
 
     const text = news()?.textContent ?? ''
     expect(text).toContain('corrige sozinho')
@@ -44,7 +44,7 @@ describe('HomeScreen — novidades', () => {
 
   test('Entendi closes the news', () => {
     render(<HomeScreen />)
-    choose('Jogar com a Turma')
+    choose('Play with the Class')
 
     fireEvent.click(screen.getByRole('button', { name: 'Entendi' }))
 
@@ -53,7 +53,7 @@ describe('HomeScreen — novidades', () => {
 
   test('the close button closes the news', () => {
     render(<HomeScreen />)
-    choose('Jogar com a Turma')
+    choose('Play with the Class')
 
     fireEvent.click(screen.getByRole('button', { name: 'Fechar novidades' }))
 
@@ -62,24 +62,24 @@ describe('HomeScreen — novidades', () => {
 
   test('stays closed when switching between individual and class play', () => {
     render(<HomeScreen />)
-    choose('Jogar com a Turma')
+    choose('Play with the Class')
     fireEvent.click(screen.getByRole('button', { name: 'Entendi' }))
 
-    choose('Jogar Individual')
+    choose('Play Solo')
     expect(news()).toBeNull()
 
-    choose('Jogar com a Turma')
+    choose('Play with the Class')
     expect(news()).toBeNull()
   })
 
   test('comes back on the next visit', () => {
     const { unmount } = render(<HomeScreen />)
-    choose('Jogar com a Turma')
+    choose('Play with the Class')
     fireEvent.click(screen.getByRole('button', { name: 'Entendi' }))
     unmount()
 
     render(<HomeScreen />)
-    choose('Jogar com a Turma')
+    choose('Play with the Class')
 
     expect(news()).not.toBeNull()
   })
@@ -87,15 +87,15 @@ describe('HomeScreen — novidades', () => {
 
 describe('HomeScreen — regras no Jogo Individual', () => {
   function rulesButton() {
-    return screen.queryByRole('button', { name: 'Ver regras' })
+    return screen.queryByRole('button', { name: 'See rules' })
   }
 
   test('shows the rules button once Falar e Soletrar is chosen', () => {
     render(<HomeScreen />)
-    choose('Jogar Individual')
+    choose('Play Solo')
     expect(rulesButton()).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Falar e Soletrar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Speak and Spell' }))
     fireEvent.click(rulesButton()!)
 
     const dialog = screen.getByRole('dialog')
@@ -105,12 +105,12 @@ describe('HomeScreen — regras no Jogo Individual', () => {
 
   test('other modes need the difficulty before showing the rules', () => {
     render(<HomeScreen />)
-    choose('Jogar Individual')
+    choose('Play Solo')
 
-    fireEvent.click(screen.getByRole('button', { name: 'Letras Embaralhadas' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Unscramble' }))
     expect(rulesButton()).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Fácil' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Easy' }))
     expect(rulesButton()).not.toBeNull()
   })
 })

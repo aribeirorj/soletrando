@@ -23,7 +23,7 @@ function stubSpeechSynthesis() {
 
 function answer(text: string) {
   fireEvent.change(screen.getByRole('textbox'), { target: { value: text } })
-  fireEvent.click(screen.getByRole('button', { name: 'Verificar' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Check' }))
 }
 
 beforeEach(() => {
@@ -49,10 +49,10 @@ afterEach(() => {
 })
 
 describe('ListenAndTypeGame (Spelling Bee)', () => {
-  test('asks for the word in English', () => {
+  test('asks for the word with an English label', () => {
     render(<ListenAndTypeGame />)
 
-    expect(screen.getByPlaceholderText('Digite a palavra em inglês')).toBeTruthy()
+    expect(screen.getByPlaceholderText('Type the word')).toBeTruthy()
   })
 
   test('narrates the word in American English', () => {
@@ -69,7 +69,7 @@ describe('ListenAndTypeGame (Spelling Bee)', () => {
 
     answer('  CAT ')
 
-    expect(screen.getByText('Acertou!')).toBeTruthy()
+    expect(screen.getByText('Correct!')).toBeTruthy()
     expect(useGameStore.getState().score).toBe(10)
   })
 
@@ -78,7 +78,7 @@ describe('ListenAndTypeGame (Spelling Bee)', () => {
 
     answer('kat')
 
-    expect(screen.getByText('Errou. A palavra correta era: cat')).toBeTruthy()
+    expect(screen.getByText('Wrong. The correct word was: cat')).toBeTruthy()
   })
 
   test('has no accent keys', () => {

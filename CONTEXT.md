@@ -1,6 +1,6 @@
 # CONTEXT — Jogo de Soletrar
 
-Jogo web para praticar **ortografia**, pensado para uso em sala de aula, em duas **Versões**: o **Spelling Bee**, com palavras em inglês, e o **Soletrando**, com palavras em português. A interface é sempre em português.
+Jogo web para praticar **ortografia**, pensado para uso em sala de aula, em duas **Versões**: o **Spelling Bee**, com palavras em inglês, e o **Soletrando**, com palavras em português. No Soletrando, a interface é toda em português. No Spelling Bee, os **Rótulos** são em inglês e as **Informações importantes** ficam em português.
 
 Este documento define a linguagem do domínio. Use estes termos (e os identificadores de código correspondentes) ao discutir, nomear e documentar o projeto.
 
@@ -12,6 +12,8 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 |---|---|---|
 | **Jogo de Soletrar** | — | O projeto inteiro: um código e um deploy com duas Versões. |
 | **Idioma** | `LanguagePack` (`src/language/`) | Língua das palavras jogadas: `en` ou `pt`. Vem do endereço aberto, nunca de uma escolha na tela. |
+| **Rótulo** | `LanguageLabels` (`englishLabels.ts`, `portugueseLabels.ts`) | Texto que nomeia algo na tela: botões, títulos, campos, Modos de Jogo, Dificuldades, Categorias, placar e contadores ("Play Solo", "Letter 2 of 6"). Em inglês no Spelling Bee e em português no Soletrando. |
+| **Informação importante** | — | Texto que explica regra, pontuação, erro ou o que o professor deve fazer: Regras, Novidades, texto das Dicas, explicação do resultado, instruções ao professor e avisos de microfone e navegador. Fica em português nas duas Versões e cita os botões pelo nome em português ("Correto ou Incorreto"). |
 | **Versão** | `index.html`, `pt/index.html` | O app de um Idioma, com nome e arte próprios: **Spelling Bee** em `/` (inglês) e **Soletrando** em `/pt/` (português). Recorde, Jogador e Sessão são separados por Versão. |
 | **Letra** | `spelledUnits` | Unidade que o aluno soletra. No Soletrando, a letra acentuada é uma Letra só (É, Ç) e o hífen também conta como Letra; o espaço nunca conta. |
 | **Sinal gráfico** | — | Acento (agudo, circunflexo, til, crase) ou cedilha. Faz parte da grafia: "cafe" não é "café". |

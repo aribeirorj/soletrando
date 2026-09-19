@@ -9,7 +9,7 @@ export interface WordCategory {
 export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   {
     id: 'colors',
-    label: 'Cores',
+    label: 'Colors',
     words: [
       'black', 'blue', 'brown', 'grey', 'green', 'orange', 'pink', 'purple',
       'red', 'violet', 'white', 'yellow',
@@ -17,17 +17,17 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'seasons',
-    label: 'Estações do Ano',
+    label: 'Seasons of the Year',
     words: ['spring', 'summer', 'fall', 'autumn', 'winter'],
   },
   {
     id: 'days-of-week',
-    label: 'Dias da Semana',
+    label: 'Days of the Week',
     words: ['sunday', 'monday', 'tuesday', 'wednesday', 'thursday', 'friday', 'saturday'],
   },
   {
     id: 'months',
-    label: 'Meses do Ano',
+    label: 'Months of the Year',
     words: [
       'january', 'february', 'march', 'april', 'may', 'june', 'july',
       'august', 'september', 'october', 'november', 'december',
@@ -35,7 +35,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'school-supplies',
-    label: 'Material Escolar',
+    label: 'School Supplies',
     words: [
       'notebook', 'backpack', 'ruler', 'eraser', 'folder', 'book', 'pencil',
       'pen', 'glue', 'scissors',
@@ -43,7 +43,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'house-parts',
-    label: 'Partes da Casa',
+    label: 'Parts of the House',
     words: [
       'attic', 'balcony', 'basement', 'bathroom', 'bedroom', 'ceiling', 'deck',
       'dining room', 'door', 'doorbell', 'floor', 'garage', 'garden', 'hallway',
@@ -53,7 +53,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'body-parts',
-    label: 'Partes do Corpo',
+    label: 'Parts of the Body',
     words: [
       'hair', 'eyes', 'mouth', 'head', 'chest', 'hand', 'belly', 'leg', 'foot',
       'feet',
@@ -61,7 +61,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'animals',
-    label: 'Animais',
+    label: 'Animals',
     words: [
       'alligator', 'cat', 'dog', 'lion', 'tiger', 'bird', 'bear', 'giraffe',
       'kangaroo', 'elephant', 'monkey', 'snake', 'shark', 'whale', 'wolf',
@@ -70,7 +70,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'nationalities',
-    label: 'Nacionalidades',
+    label: 'Nationalities',
     words: [
       'afghan', 'american', 'argentinian', 'australian', 'brazilian', 'british',
       'canadian', 'chinese', 'colombian', 'egyptian', 'english', 'french',
@@ -80,7 +80,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'transportation',
-    label: 'Meios de Transporte',
+    label: 'Transportation',
     words: [
       'airplane', 'bicycle', 'boat', 'bus', 'sailboat', 'scooter', 'ship',
       'skateboard', 'subway', 'taxi', 'train', 'truck', 'van',
@@ -88,7 +88,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'food',
-    label: 'Comidas',
+    label: 'Food',
     words: [
       'hamburger', 'fries', 'potato', 'tomato', 'lettuce', 'rice', 'beans',
       'spaghetti', 'butter', 'bread', 'chocolate', 'sugar', 'egg', 'steak',
@@ -98,7 +98,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'drinks',
-    label: 'Bebidas',
+    label: 'Drinks',
     words: [
       'juice', 'beer', 'coke', 'coffee', 'lemonade', 'soda', 'milk',
       'milkshake', 'wine', 'water', 'whisky',
@@ -106,7 +106,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'fruit',
-    label: 'Frutas',
+    label: 'Fruit',
     words: [
       'apple', 'avocado', 'banana', 'blackberry', 'cherry', 'coconut',
       'grapefruit', 'grape', 'hazelnuts', 'lemon', 'lime', 'mango', 'melon',
@@ -116,7 +116,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'music-instruments',
-    label: 'Instrumentos Musicais',
+    label: 'Musical Instruments',
     words: [
       'guitar', 'electric guitar', 'trumpet', 'saxophone', 'violin', 'piano',
       'flute', 'drums',
@@ -124,7 +124,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'sports',
-    label: 'Esportes',
+    label: 'Sports',
     words: [
       'aerobics', 'archery', 'athletics', 'badminton', 'baseball', 'basketball',
       'bowling', 'boxing', 'cycling', 'diving', 'fishing', 'football', 'golf',
@@ -135,7 +135,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'clothes',
-    label: 'Roupas',
+    label: 'Clothes',
     words: [
       'blouse', 'shirt', 'pants', 'shoes', 'coat', 'sunglasses', 'watch',
       'ring', 'earrings', 'skirt', 'gloves', 'dress', 'sweater', 'suit',
@@ -144,7 +144,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'family-members',
-    label: 'Membros da Família',
+    label: 'Family Members',
     words: [
       'aunt', 'brother', 'children', 'cousin', 'daughter', 'father',
       'goddaughter', 'godfather', 'godmother', 'godson', 'grandchildren',
@@ -155,7 +155,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'occupations',
-    label: 'Profissões',
+    label: 'Occupations',
     words: [
       'accountant', 'actor', 'actress', 'archaeologist', 'architect', 'artist',
       'astronaut', 'athlete', 'attorney', 'author', 'baker', 'banker',
@@ -177,7 +177,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'adjectives',
-    label: 'Adjetivos',
+    label: 'Adjectives',
     words: [
       'adventurous', 'aggressive', 'ambitious', 'amusing', 'beautiful',
       'careful', 'charming', 'cheerful', 'confident', 'creative', 'curious',
@@ -188,7 +188,7 @@ export const SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   },
   {
     id: 'countries',
-    label: 'Países',
+    label: 'Countries',
     words: [
       'afghanistan', 'argentina', 'australia', 'belgium', 'brazil', 'canada',
       'chile', 'china', 'colombia', 'denmark', 'egypt', 'england', 'finland',

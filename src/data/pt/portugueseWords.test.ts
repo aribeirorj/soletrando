@@ -55,10 +55,30 @@ describe('Banco de Palavras do Soletrando — por Dificuldade', () => {
 })
 
 describe('Banco de Palavras do Soletrando — Categorias', () => {
-  test('has the same themes as the Spelling Bee, in the same order', () => {
-    expect(PT_SPEAK_AND_SPELL_CATEGORIES.map(({ id, label }) => ({ id, label }))).toEqual(
+  test('starts with the same themes as the Spelling Bee, in the same order', () => {
+    const shared = PT_SPEAK_AND_SPELL_CATEGORIES.slice(0, SPEAK_AND_SPELL_CATEGORIES.length)
+
+    expect(shared.map(({ id, label }) => ({ id, label }))).toEqual(
       SPEAK_AND_SPELL_CATEGORIES.map(({ id, label }) => ({ id, label })),
     )
+  })
+
+  test('Ciência e Informação comes after them, only in the Soletrando', () => {
+    const extra = PT_SPEAK_AND_SPELL_CATEGORIES.slice(SPEAK_AND_SPELL_CATEGORIES.length)
+
+    expect(extra.map(({ id, label }) => ({ id, label }))).toEqual([
+      { id: 'science-and-information', label: 'Ciência e Informação' },
+    ])
+  })
+
+  test('Ciência e Informação has the school list words that were not in another category', () => {
+    const words = getPortugueseSpeakAndSpellWords(['science-and-information']).map((word) => word.text)
+
+    expect(words).toHaveLength(54)
+    expect(words).toEqual(expect.arrayContaining(['ciência', 'desinformação', 'modalizador', 'argumento']))
+    // "livro" já estava em Material Escolar.
+    expect(words).not.toContain('livro')
+    expect(getPortugueseSpeakAndSpellWords(['school-supplies']).map((word) => word.text)).toContain('livro')
   })
 
   test.each(PT_SPEAK_AND_SPELL_CATEGORIES.map((category) => [category.id, category.words] as const))(

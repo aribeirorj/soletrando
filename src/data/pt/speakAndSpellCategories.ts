@@ -2,7 +2,8 @@ import type { Word } from '../../types'
 import type { WordCategory } from '../speakAndSpellCategories'
 
 // Categorias do Falar e Soletrar no Soletrando: os mesmos temas do Spelling Bee, com palavras
-// em português (Acordo Ortográfico de 2009). Adjetivos e nacionalidades no masculino singular.
+// em português (Acordo Ortográfico de 2009), e depois as que só existem no Soletrando.
+// Adjetivos e nacionalidades no masculino singular.
 export const PT_SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
   {
     id: 'colors',
@@ -188,6 +189,23 @@ export const PT_SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [
       'jamaica', 'japão', 'coreia', 'méxico', 'marrocos', 'holanda', 'paraguai',
       'portugal', 'rússia', 'escócia', 'singapura', 'espanha', 'suécia', 'suíça',
       'turquia', 'reino unido', 'estados unidos', 'uruguai',
+    ],
+  },
+  // Só no Soletrando: lista da escola sobre ciência, informação e argumentação ("livro" já está
+  // em Material Escolar).
+  {
+    id: 'science-and-information',
+    label: 'Ciência e Informação',
+    words: [
+      'ciência', 'científica', 'consequência', 'inteligência', 'tecnologia', 'informação',
+      'opinião', 'referência', 'responsabilidade', 'credibilidade', 'transparência', 'explicação',
+      'propagação', 'comunicação', 'comparação', 'conclusão', 'desenvolvimento',
+      'sustentabilidade', 'autorais', 'digitalização', 'desinformação', 'artificial', 'divulgação',
+      'argumentação', 'interpretação', 'modalizador', 'conectivo', 'referenciação', 'finalidade',
+      'manipulação', 'qualidade', 'reciclagem', 'investimento', 'plataforma', 'algoritmo',
+      'usuário', 'conexão', 'fato', 'texto', 'tema', 'ideia', 'fonte', 'notícia', 'escola',
+      'aluno', 'pesquisa', 'dados', 'autor', 'leitura', 'internet', 'cuidado', 'verdade',
+      'exemplo', 'argumento',
     ],
   },
 ]

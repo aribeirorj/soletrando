@@ -64,13 +64,14 @@ export const portuguese: LanguagePack = {
   matchesExpectedUnit: (heard, expected) => heard.normalize('NFC') === expected.normalize('NFC'),
   speakUnit: speakPortugueseUnit,
   unitLabel: portugueseUnitLabel,
-  // Até o reconhecimento em português ser validado, só Correto/Incorreto.
+  // O modelo de voz em português não reconhece os nomes das letras
+  // (docs/spikes/2026-09-19-voz-em-portugues.md): só Correto/Incorreto.
   recognizer: null,
   accentButtons: ['á', 'â', 'ã', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ç'],
   strictTypingInput: true,
   logo: null,
   hero: { src: estudantes, alt: 'Dois estudantes de uniforme da escola, com notebook e tablet' },
-  showWhatsNew: false,
+  homeNotice: 'como-funciona-soletrando',
   texts: {
     typeWordPlaceholder: 'Digite a palavra',
     howToPlay: {

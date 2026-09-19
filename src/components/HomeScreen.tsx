@@ -9,8 +9,15 @@ import { RecordBadge } from './RecordBadge'
 import { OptionButton } from './OptionButton'
 import { GameOptionsFields, MODE_SELECTED_CLASS } from './GameOptionsFields'
 import { WhatsNewNotice } from './WhatsNewNotice'
+import { SoletrandoNotice } from './SoletrandoNotice'
+import type { HomeNotice } from '../language/types'
 import { RulesButton } from './RulesModal'
 import { PlayIcon, UserIcon, UsersIcon } from './icons'
+
+const HOME_NOTICES: Record<HomeNotice, typeof WhatsNewNotice> = {
+  novidades: WhatsNewNotice,
+  'como-funciona-soletrando': SoletrandoNotice,
+}
 
 export function HomeScreen() {
   const highScore = useGameStore((s) => s.highScore)
@@ -18,6 +25,7 @@ export function HomeScreen() {
   const setPlayerName = useGameStore((s) => s.setPlayerName)
   const startGame = useGameStore((s) => s.startGame)
   const language = getLanguage()
+  const Notice = HOME_NOTICES[language.homeNotice]
   const { isSupported: speechSupported } = useSpeech(language.speechLang)
 
   const students = useSessionStore((s) => s.students)
@@ -33,7 +41,7 @@ export function HomeScreen() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   // Some ao fechar e volta na próxima visita (não é persistido).
-  const [showWhatsNew, setShowWhatsNew] = useState(true)
+  const [showNotice, setShowNotice] = useState(true)
 
   const isSpeakAndSpell = selectedMode === 'falar-soletrar'
   const hasGameOptions =
@@ -105,7 +113,7 @@ export function HomeScreen() {
           </div>
         </div>
 
-        {playMode !== null && language.showWhatsNew && showWhatsNew && <WhatsNewNotice onClose={() => setShowWhatsNew(false)} />}
+        {playMode !== null && showNotice && <Notice onClose={() => setShowNotice(false)} />}
 
         {playMode === 'individual' && (
           <>

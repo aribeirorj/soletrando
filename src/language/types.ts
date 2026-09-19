@@ -4,6 +4,9 @@ import type { Difficulty, GameMode, Word } from '../types'
 
 export type LanguageId = 'en' | 'pt'
 
+// Aviso da tela inicial: as Novidades do Spelling Bee ou o "Como funciona" do Soletrando.
+export type HomeNotice = 'novidades' | 'como-funciona-soletrando'
+
 export interface LanguageArt {
   src: string
   alt: string
@@ -42,6 +45,6 @@ export interface LanguagePack {
   // null: o nome aparece em texto.
   logo: LanguageArt | null
   hero: LanguageArt | null
-  showWhatsNew: boolean
+  homeNotice: HomeNotice
   texts: LanguageTexts
 }

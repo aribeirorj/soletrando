@@ -39,7 +39,7 @@ describe('english (Spelling Bee)', () => {
   test('has no accent keys and shows the Novidades', () => {
     expect(english.accentButtons).toEqual([])
     expect(english.strictTypingInput).toBe(false)
-    expect(english.showWhatsNew).toBe(true)
+    expect(english.homeNotice).toBe('novidades')
   })
 
   test('keeps the current texts', () => {

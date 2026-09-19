@@ -50,6 +50,61 @@ describe('HomeScreen no Soletrando', () => {
   })
 })
 
+describe('Aviso "Como funciona o Soletrando"', () => {
+  function notice() {
+    return screen.queryByRole('region', { name: 'Como funciona o Soletrando' })
+  }
+
+  test.each(['Jogar Individual', 'Jogar com a Turma'])('shows after choosing %s', (playMode) => {
+    render(<HomeScreen />)
+
+    fireEvent.click(screen.getByRole('button', { name: playMode }))
+
+    const text = notice()?.textContent ?? ''
+    expect(text).toContain('"cafe" no lugar de "café" é erro')
+    expect(text).toContain('á â ã é ê í ó ô õ ú ç')
+    expect(text).toContain('blocos próprios')
+    expect(text).toContain('"é com acento agudo"')
+    expect(text).toContain('Correto')
+    expect(text).toContain('Incorreto')
+    expect(text).toContain('Ouvir a pronúncia')
+    expect(text).toContain('10 pontos na hora')
+    expect(text).toContain('só conta como acerto se todas as letras estiverem certas')
+  })
+
+  test('tells nothing that the Soletrando does not do', () => {
+    render(<HomeScreen />)
+
+    fireEvent.click(screen.getByRole('button', { name: 'Jogar Individual' }))
+
+    const text = notice()?.textContent ?? ''
+    expect(text).not.toMatch(/ingl[eê]s/i)
+    expect(text).not.toContain('microfone')
+  })
+
+  test('does not show before choosing how to play', () => {
+    render(<HomeScreen />)
+
+    expect(notice()).toBeNull()
+  })
+
+  test('Entendi and × close it', () => {
+    render(<HomeScreen />)
+    fireEvent.click(screen.getByRole('button', { name: 'Jogar Individual' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Entendi' }))
+    expect(notice()).toBeNull()
+  })
+
+  test('× closes it', () => {
+    render(<HomeScreen />)
+    fireEvent.click(screen.getByRole('button', { name: 'Jogar com a Turma' }))
+
+    fireEvent.click(screen.getByRole('button', { name: 'Fechar aviso' }))
+    expect(notice()).toBeNull()
+  })
+})
+
 describe('Regras no Soletrando', () => {
   test('Falar e Soletrar: buttons only, accents and hyphen count', () => {
     render(<RulesButton mode="falar-soletrar" difficulty="dificil" />)

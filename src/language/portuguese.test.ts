@@ -63,10 +63,10 @@ describe('portuguese (Soletrando)', () => {
     expect(portuguese.unitLabel('-')).toBe('HÍFEN')
   })
 
-  test('has accent keys and no Novidades', () => {
+  test('has accent keys and its own notice instead of the Novidades', () => {
     expect(portuguese.accentButtons).toEqual(['á', 'â', 'ã', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ç'])
     expect(portuguese.strictTypingInput).toBe(true)
-    expect(portuguese.showWhatsNew).toBe(false)
+    expect(portuguese.homeNotice).toBe('como-funciona-soletrando')
   })
 
   test('no text mentions English', () => {

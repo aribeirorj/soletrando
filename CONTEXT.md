@@ -29,6 +29,7 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 | **Ranking** | `RankingScreen`, `sortByScoreDescending` | Alunos da Sessão ordenados por pontuação total. Os 3 primeiros ganham troféu. |
 | **Regras** | `RulesButton` (`RulesModal.tsx`) | Ícone "?" que abre um modal com as regras e a pontuação do Modo de Jogo. Na Turma, fica ao lado do título da lista de alunos; no Jogo Individual, ao lado de "Modo de jogo" na tela inicial, depois de escolher o modo (e a dificuldade, fora do Falar e Soletrar). A última regra muda conforme a forma de jogar (`playMode`): Ranking na Turma, Recorde no Individual. |
 | **Novidades** | `WhatsNewNotice` | Aviso na tela inicial, ao escolher Jogar Individual ou Jogar com a Turma, explicando a correção automática, o Ouvir a pronúncia e a pontuação por letra do Falar e Soletrar. Fechar esconde até a próxima visita (não é salvo). Só no Spelling Bee. |
+| **Como funciona o Soletrando** | `SoletrandoNotice` | O equivalente às Novidades no Soletrando, no mesmo lugar e com o mesmo formato (`NoticeCard`): acentos e hífen contam, Teclas de acento, blocos próprios no Letras Embaralhadas, soletrar dizendo o acento com Correto/Incorreto, Ouvir a pronúncia em português e Pontos por letra. |
 
 ### Opções de Jogo
 

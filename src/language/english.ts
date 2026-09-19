@@ -27,7 +27,7 @@ export const english: LanguagePack = {
   strictTypingInput: false,
   logo: { src: logoJogo, alt: 'Jogo de Soletrar' },
   hero: { src: heroAbelha, alt: 'Abelha de óculos escuros com microfone, blocos ABC, a bandeira dos Estados Unidos e o logo Spelling Bee' },
-  showWhatsNew: true,
+  homeNotice: 'novidades',
   texts: {
     typeWordPlaceholder: 'Digite a palavra em inglês',
     howToPlay: {

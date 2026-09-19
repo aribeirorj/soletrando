@@ -1,6 +1,7 @@
 import { create } from 'zustand'
 import { getWordsByDifficulty } from '../data/words'
 import { getSpeakAndSpellWords } from '../data/speakAndSpellCategories'
+import { spelledUnits } from '../language/spelledUnits'
 import type { Difficulty, GameMode, GameStatus, Word } from '../types'
 
 const SPEAK_AND_SPELL_DIFFICULTY: Difficulty = 'dificil'
@@ -21,8 +22,13 @@ export function pickNextRandomWord(pool: Word[], previous: Word | null): Word {
   return candidates[Math.floor(Math.random() * candidates.length)]
 }
 
+// Sinais gráficos e hífen contam; NFC faz o acento digitado separado valer como o composto.
+function canonicalAnswer(text: string): string {
+  return text.trim().normalize('NFC').toLowerCase()
+}
+
 export function isAnswerCorrect(answer: string, target: string): boolean {
-  return answer.trim().toLowerCase() === target.trim().toLowerCase()
+  return canonicalAnswer(answer) === canonicalAnswer(target)
 }
 
 const BASE_SCORE_BY_DIFFICULTY: Record<Difficulty, number> = {
@@ -48,7 +54,7 @@ export const SPEAK_AND_SPELL_SECONDS_PER_LETTER = 5
 
 // Falar e Soletrar: 5 s por letra, sem ficar abaixo do tempo mínimo do modo.
 export function getSpellingSeconds(wordText: string): number {
-  const letterCount = wordText.replace(/ /g, '').length
+  const letterCount = spelledUnits(wordText).length
   return Math.max(QUESTION_SECONDS_BY_MODE['falar-soletrar'], letterCount * SPEAK_AND_SPELL_SECONDS_PER_LETTER)
 }
 

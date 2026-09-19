@@ -6,6 +6,7 @@ import { ScoreBoard } from './ScoreBoard'
 import { Timer } from './Timer'
 import { HintButton } from './HintButton'
 import { QuestionFeedback } from './QuestionFeedback'
+import { displayUnits } from '../language/spelledUnits'
 
 const QUESTION_SECONDS = QUESTION_SECONDS_BY_MODE['letras-embaralhadas']
 
@@ -15,7 +16,7 @@ interface LetterBlock {
 }
 
 function shuffleWord(word: string): LetterBlock[] {
-  const original = word.split('')
+  const original = displayUnits(word)
   let shuffled = [...original]
 
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -24,7 +25,7 @@ function shuffleWord(word: string): LetterBlock[] {
       const j = Math.floor(Math.random() * (i + 1))
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
-    if (shuffled.join('') !== word || word.length <= 1) break
+    if (shuffled.join('') !== original.join('') || original.length <= 1) break
   }
 
   return shuffled.map((letter, index) => ({ id: index, letter }))
@@ -56,7 +57,7 @@ export function UnscrambleGame() {
   }, [currentWord])
 
   useEffect(() => {
-    if (currentWord && placed.length > 0 && placed.length === currentWord.text.length) {
+    if (currentWord && placed.length > 0 && placed.length === shuffled.length) {
       submitAnswer(placed.map((b) => b.letter).join(''))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

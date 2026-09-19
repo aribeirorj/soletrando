@@ -4,11 +4,14 @@ import { useGameStore } from '../store/gameStore'
 import { ListenAndTypeGame } from './ListenAndTypeGame'
 
 class FakeUtterance {
+  text: string
   lang = ''
   onstart: (() => void) | null = null
   onend: (() => void) | null = null
   onerror: (() => void) | null = null
-  constructor(public text: string) {}
+  constructor(text: string) {
+    this.text = text
+  }
 }
 
 const speak = vi.fn<(utterance: FakeUtterance) => void>()

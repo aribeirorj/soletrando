@@ -17,6 +17,7 @@ import { useCountdown } from '../hooks/useCountdown'
 import { useHeardLetters } from '../hooks/useHeardLetters'
 import { useSpeech } from '../hooks/useSpeech'
 import { isRecognitionUnavailable } from '../speech/letterRecognition'
+import { displayUnits, spelledUnits } from '../language/spelledUnits'
 import { ScoreBoard } from './ScoreBoard'
 import { Timer } from './Timer'
 import { QuestionFeedback } from './QuestionFeedback'
@@ -106,7 +107,7 @@ export function SpeakAndSpellGame() {
   const { remaining, reset } = useCountdown({ seconds, onExpire: handleTimeout })
 
   const spellable = useMemo(
-    () => (currentWord ? currentWord.text.replace(/ /g, '').toLowerCase().split('') : []),
+    () => (currentWord ? spelledUnits(currentWord.text) : []),
     [currentWord],
   )
   const [progress, dispatch] = useReducer(spellingProgressReducer, INITIAL_SPELLING_PROGRESS)
@@ -167,7 +168,7 @@ export function SpeakAndSpellGame() {
   if (!currentWord) return null
 
   const isTurnComplete = turnLength !== null && questionsAnsweredInTurn >= turnLength
-  const letters = currentWord.text.split('')
+  const letters = displayUnits(currentWord.text)
   const displayIndices = spellableIndices(letters)
   const currentDisplayIndex = displayIndices[progress.letterIndex]
   const doneUntil = currentDisplayIndex ?? letters.length

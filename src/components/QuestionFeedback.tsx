@@ -9,7 +9,7 @@ interface QuestionFeedbackProps {
   correctAnswer: string
   onNext: () => void
   nextLabel?: string
-  // Substitui a frase padrão (ex.: Falar e Soletrar explica letras erradas e pontos).
+  // Substitui a frase padrão (ex.: Soletrar explica letras erradas e pontos).
   message?: ReactNode
   children?: ReactNode
 }

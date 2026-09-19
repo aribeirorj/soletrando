@@ -45,7 +45,7 @@ describe('english (Spelling Bee)', () => {
   test('labels in English, important information in Portuguese', () => {
     expect(english.texts.typeWordPlaceholder).toBe('Type the word')
     expect(english.labels.playSolo).toBe('Play Solo')
-    expect(english.labels.modes['falar-soletrar']).toBe('Speak and Spell')
+    expect(english.labels.modes['falar-soletrar']).toBe('Spell')
     expect(english.labels.rankPosition(1)).toBe('1st')
     expect(english.labels.rankPosition(12)).toBe('12th')
     expect(english.labels.rankPosition(23)).toBe('23rd')

@@ -1,6 +1,6 @@
 import { matchesExpectedLetter } from '../speech/letterNames'
 
-// Progresso da soletração de uma palavra no Falar e Soletrar. Serve aos dois jeitos de
+// Progresso da soletração de uma palavra no Soletrar. Serve aos dois jeitos de
 // corrigir: `attempt` (voz, com até MAX_ATTEMPTS tentativas por letra) e `mark` (botões
 // Correto/Incorreto, uma decisão por letra). `spellable` são as letras da palavra, em
 // minúsculas e sem espaços.

@@ -54,7 +54,7 @@ export const QUESTION_SECONDS_BY_MODE: Record<GameMode, number> = {
 
 export const SPEAK_AND_SPELL_SECONDS_PER_LETTER = 5
 
-// Falar e Soletrar: 5 s por letra, sem ficar abaixo do tempo mínimo do modo.
+// Soletrar: 5 s por letra, sem ficar abaixo do tempo mínimo do modo.
 export function getSpellingSeconds(wordText: string): number {
   const letterCount = spelledUnits(wordText).length
   return Math.max(QUESTION_SECONDS_BY_MODE['falar-soletrar'], letterCount * SPEAK_AND_SPELL_SECONDS_PER_LETTER)
@@ -230,7 +230,7 @@ export const useGameStore = create<GameState>((set, get) => ({
     return correct
   },
 
-  // Falar e Soletrar: cada letra certa pontua na hora, mesmo que outra letra da palavra erre.
+  // Soletrar: cada letra certa pontua na hora, mesmo que outra letra da palavra erre.
   awardSpellingLetters: (count) => {
     const { score, highScore } = get()
     set(applyScoreDelta(score, highScore, count * SPEAK_AND_SPELL_POINTS_PER_LETTER))

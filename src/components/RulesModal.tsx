@@ -13,7 +13,7 @@ import { HelpCircleIcon } from './icons'
 const MODE_LABELS: Record<GameMode, string> = {
   'ouvir-digitar': 'Ouvir e Digitar',
   'letras-embaralhadas': 'Letras Embaralhadas',
-  'falar-soletrar': 'Falar e Soletrar',
+  'falar-soletrar': 'Soletrar',
 }
 
 function getRules(mode: GameMode, difficulty: Difficulty): string[] {

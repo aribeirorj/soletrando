@@ -29,8 +29,8 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 | **Aluno** | `Student` | Participante de uma Sessão. Acumula `totalScore`, `correctCount` e `wrongCount` ao longo dos turnos. |
 | **Turno** | `startTurn` / `finishTurn` / `cancelTurn` | A vez de um Aluno jogar: uma sequência de `questionsPerTurn` perguntas. Ao terminar, o resultado é somado ao Aluno. Cancelar (voltar ao menu) descarta o resultado. |
 | **Ranking** | `RankingScreen`, `sortByScoreDescending` | Alunos da Sessão ordenados por pontuação total. Os 3 primeiros ganham troféu. |
-| **Regras** | `RulesButton` (`RulesModal.tsx`) | Ícone "?" que abre um modal com as regras e a pontuação do Modo de Jogo. Na Turma, fica ao lado do título da lista de alunos; no Jogo Individual, ao lado de "Modo de jogo" na tela inicial, depois de escolher o modo (e a dificuldade, fora do Falar e Soletrar). A última regra muda conforme a forma de jogar (`playMode`): Ranking na Turma, Recorde no Individual. |
-| **Novidades** | `WhatsNewNotice` | Aviso na tela inicial, ao escolher Jogar Individual ou Jogar com a Turma, explicando a correção automática, o Ouvir a pronúncia e a pontuação por letra do Falar e Soletrar. Fechar esconde até a próxima visita (não é salvo). Só no Spelling Bee. |
+| **Regras** | `RulesButton` (`RulesModal.tsx`) | Ícone "?" que abre um modal com as regras e a pontuação do Modo de Jogo. Na Turma, fica ao lado do título da lista de alunos; no Jogo Individual, ao lado de "Modo de jogo" na tela inicial, depois de escolher o modo (e a dificuldade, fora do Soletrar). A última regra muda conforme a forma de jogar (`playMode`): Ranking na Turma, Recorde no Individual. |
+| **Novidades** | `WhatsNewNotice` | Aviso na tela inicial, ao escolher Jogar Individual ou Jogar com a Turma, explicando a correção automática, o Ouvir a pronúncia e a pontuação por letra do Soletrar. Fechar esconde até a próxima visita (não é salvo). Só no Spelling Bee. |
 | **Como funciona o Soletrando** | `SoletrandoNotice` | O equivalente às Novidades no Soletrando, no mesmo lugar e com o mesmo formato (`NoticeCard`): acentos e hífen contam, Teclas de acento, blocos próprios no Letras Embaralhadas, soletrar dizendo o acento com Correto/Incorreto, Ouvir a pronúncia em português e Pontos por letra. |
 
 ### Opções de Jogo
@@ -38,8 +38,8 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 | Termo | Código | Definição |
 |---|---|---|
 | **Modo de Jogo** | `GameMode` | Mecânica da pergunta: `ouvir-digitar`, `letras-embaralhadas` ou `falar-soletrar`. |
-| **Dificuldade** | `Difficulty` | `facil`, `medio`, `dificil`. Define o conjunto de palavras e os pontos-base. Não se aplica a Falar e Soletrar (fixado internamente em `dificil`). |
-| **Categoria** | `WordCategory` | Grupo temático de palavras (Cores, Meses do Ano…), usado **apenas** em Falar e Soletrar. É possível escolher várias. |
+| **Dificuldade** | `Difficulty` | `facil`, `medio`, `dificil`. Define o conjunto de palavras e os pontos-base. Não se aplica ao Soletrar (fixado internamente em `dificil`). |
+| **Categoria** | `WordCategory` | Grupo temático de palavras (Cores, Meses do Ano…), usado **apenas** no Soletrar. É possível escolher várias. |
 | **Banco de Palavras** | `getWordPool` | Palavras elegíveis: por Dificuldade (`data/words.ts`) ou por Categorias (`data/speakAndSpellCategories.ts`). |
 
 ### Modos de Jogo
@@ -48,7 +48,7 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 |---|---|---|---|
 | **Ouvir e Digitar** | `ListenAndTypeGame` | A palavra é narrada (Web Speech API, `en-US` no Spelling Bee e `pt-BR` no Soletrando) e o jogador digita. No Soletrando, há **Teclas de acento**. Fica desabilitado se o navegador não tiver narração. | 20 s |
 | **Letras Embaralhadas** | `UnscrambleGame` | O jogador reordena as letras embaralhadas. A resposta é enviada automaticamente quando todas as letras são colocadas. No Soletrando, letra acentuada e hífen são blocos próprios. | 25 s |
-| **Falar e Soletrar** | `SpeakAndSpellGame` | O aluno soletra em voz alta, letra por letra, com a palavra à vista. Com microfone, o app corrige cada letra (até 3 **Tentativas**) e avança sozinho; sem microfone, alguém marca **Correto/Incorreto** (ver **Modo de correção**). Espaços não contam como letra; no Soletrando, letra acentuada e hífen contam como uma **Letra** cada. Ao fim da palavra há **Avanço automático**. | 5 s por letra (mín. 30 s) |
+| **Soletrar** | `SpeakAndSpellGame` | O aluno soletra em voz alta, letra por letra, com a palavra à vista. Com microfone, o app corrige cada letra (até 3 **Tentativas**) e avança sozinho; sem microfone, alguém marca **Correto/Incorreto** (ver **Modo de correção**). Espaços não contam como letra; no Soletrando, letra acentuada e hífen contam como uma **Letra** cada. Ao fim da palavra há **Avanço automático**. No Spelling Bee o rótulo é *Spell*. Chamava-se Falar e Soletrar (*Speak and Spell*): o id `falar-soletrar` e os nomes `SpeakAndSpell*` no código vêm desse nome e foram mantidos, porque o modo fica salvo na sessão da Turma. | 5 s por letra (mín. 30 s) |
 
 ### Pergunta e resultado
 
@@ -56,9 +56,9 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 |---|---|---|
 | **Pergunta** | `currentWord` | Uma palavra a ser respondida. |
 | **Status** | `GameStatus` | `jogando`, `acertou`, `errou`, `tempo-esgotado`. |
-| **Resposta correta** | `isAnswerCorrect` | Comparação sem diferenciar maiúsculas/minúsculas e ignorando espaços nas pontas. **Sinais gráficos** e hífen contam: "cafe" e "guarda chuva" são erros. Em Falar e Soletrar, a palavra só conta como acerto se **nenhuma** letra ficar errada (3 Tentativas erradas pela voz ou Incorreto nos botões). |
+| **Resposta correta** | `isAnswerCorrect` | Comparação sem diferenciar maiúsculas/minúsculas e ignorando espaços nas pontas. **Sinais gráficos** e hífen contam: "cafe" e "guarda chuva" são erros. No Soletrar, a palavra só conta como acerto se **nenhuma** letra ficar errada (3 Tentativas erradas pela voz ou Incorreto nos botões). |
 | **Tempo esgotado** | `handleTimeout` | Conta como erro e zera a Sequência. |
-| **Dica** | `HintButton`, `data/wordHints.ts` | Descrição em português da palavra (nunca contém a própria palavra). Uma por pergunta; reduz os pontos pela metade. Não existe em Falar e Soletrar. |
+| **Dica** | `HintButton`, `data/wordHints.ts` | Descrição em português da palavra (nunca contém a própria palavra). Uma por pergunta; reduz os pontos pela metade. Não existe no Soletrar. |
 
 ### Pontuação
 
@@ -66,7 +66,7 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 |---|---|---|
 | **Pontos** | `score` | Soma dos pontos no jogo/turno atual. |
 | **Pontos por pergunta** | `computeQuestionScore` | Fácil 10 · Médio 20 · Difícil 30; metade (arredondada) se a Dica foi usada. |
-| **Pontos por letra** | `awardSpellingLetters` | Falar e Soletrar: cada letra certa soma 10 pontos no placar na hora (espaços não contam), pela voz ou pelo botão Correto. Letra errada não pontua, mas as outras letras da palavra continuam valendo. Acerto/erro da palavra continua contado por palavra (`completeSpellingWord`). |
+| **Pontos por letra** | `awardSpellingLetters` | Soletrar: cada letra certa soma 10 pontos no placar na hora (espaços não contam), pela voz ou pelo botão Correto. Letra errada não pontua, mas as outras letras da palavra continuam valendo. Acerto/erro da palavra continua contado por palavra (`completeSpellingWord`). |
 | **Sequência** | `streak` | Acertos consecutivos; zera com erro ou tempo esgotado. Apenas informativa. |
 | **Recorde** | `highScore` | Maior pontuação já alcançada neste navegador, separada por Versão (`soletrando:highScore` no Spelling Bee, `soletrando-pt:highScore` no Soletrando). Não é por jogador nem por modo. |
 
@@ -87,9 +87,10 @@ Este documento define a linguagem do domínio. Use estes termos (e os identifica
 ## Ambiguidades conhecidas
 
 - **"Rodada"** é evitado no código. Use **Pergunta** para uma palavra (`hintUsedThisQuestion`, `QUESTION_SECONDS`, `QuestionFeedback`, `computeQuestionScore`) e **Turno** para o conjunto de perguntas de um aluno (`turnLength`, `questionsAnsweredInTurn`, `questionsPerTurn`). Na interface, os textos "Perguntas por rodada" e "Ver resultado da rodada" continuam com "rodada" e se referem ao Turno.
-- **"Categoria"** existe só em Falar e Soletrar; os outros modos usam Dificuldade. Não confundir com os níveis de dificuldade.
-- **"Narração"** (síntese de voz, `useSpeech`: a palavra em Ouvir e Digitar e o botão Ouvir a pronúncia em Falar e Soletrar) é diferente de **"Reconhecimento"** (microfone, `speech/`, em Falar e Soletrar).
+- **"Categoria"** existe só no Soletrar; os outros modos usam Dificuldade. Não confundir com os níveis de dificuldade.
+- **"Narração"** (síntese de voz, `useSpeech`: a palavra em Ouvir e Digitar e o botão Ouvir a pronúncia no Soletrar) é diferente de **"Reconhecimento"** (microfone, `speech/`, no Soletrar).
 - **"Soletrando"** era o nome do projeto inteiro; agora é só a Versão em português. Para o projeto, use **Jogo de Soletrar**.
+- **"Soletrar"** é o Modo de Jogo (em inglês, *Spell*). Não confundir com o **Soletrando** (a Versão em português) nem com o **Jogo de Soletrar** (o projeto).
 - **"Acento"** na **Tolerância ao sotaque** é a pronúncia do aluno; na grafia, use **Sinal gráfico**.
 - A **Letra ouvida** não é uma **Resposta**: quem pontua é o **Progresso da soletração** (via `completeSpellingWord`), a partir das Tentativas ou dos botões.
 

@@ -1,7 +1,7 @@
 import type { Word } from '../../types'
 import type { WordCategory } from '../speakAndSpellCategories'
 
-// Categorias do Falar e Soletrar no Soletrando: os mesmos temas do Spelling Bee, com palavras
+// Categorias do Soletrar no Soletrando: os mesmos temas do Spelling Bee, com palavras
 // em português (Acordo Ortográfico de 2009), e depois as que só existem no Soletrando.
 // Adjetivos e nacionalidades no masculino singular.
 export const PT_SPEAK_AND_SPELL_CATEGORIES: WordCategory[] = [

@@ -6,10 +6,10 @@ interface WhatsNewNoticeProps {
   onClose: () => void
 }
 
-// Aviso na tela inicial (Individual e Turma) sobre as novidades do Falar e Soletrar.
+// Aviso na tela inicial (Individual e Turma) sobre as novidades do Soletrar.
 export function WhatsNewNotice({ onClose }: WhatsNewNoticeProps) {
   return (
-    <NoticeCard title="Novidades no Falar e Soletrar" closeLabel="Fechar novidades" onClose={onClose}>
+    <NoticeCard title="Novidades no Soletrar" closeLabel="Fechar novidades" onClose={onClose}>
       <li>
         <strong>Correção automática:</strong> com microfone, o app ouve cada letra que o aluno fala, corrige sozinho e
         avança. Cada letra tem até {MAX_ATTEMPTS} tentativas.

@@ -54,7 +54,7 @@ describe('HomeScreen no Soletrando', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'Jogar com a Turma' }))
 
-    expect(screen.queryByRole('region', { name: 'Novidades no Falar e Soletrar' })).toBeNull()
+    expect(screen.queryByRole('region', { name: 'Novidades no Soletrar' })).toBeNull()
   })
 })
 
@@ -114,7 +114,7 @@ describe('Aviso "Como funciona o Soletrando"', () => {
 })
 
 describe('Regras no Soletrando', () => {
-  test('Falar e Soletrar: buttons only, accents and hyphen count', () => {
+  test('Soletrar: buttons only, accents and hyphen count', () => {
     render(<RulesButton mode="falar-soletrar" difficulty="dificil" />)
 
     const text = openRules().textContent ?? ''

@@ -12,7 +12,7 @@ O mesmo build tem duas páginas ([ADR 0001](docs/adr/0001-um-build-duas-versoes.
 | **Soletrando** | `/pt/` | em português, com acentos e hífen |
 
 - **Desenvolvimento:** `npm run dev` e abra `http://localhost:5173/` ou `http://localhost:5173/pt/`. `/pt` sem a barra redireciona.
-- **Hospedagem:** `npm run build` gera `dist/index.html` e `dist/pt/index.html`. O servidor precisa entregar `/pt/` a partir de `dist/pt/index.html`, sem uma regra de SPA que mande tudo para `/index.html`.
+- **Hospedagem:** `npm run build` gera `dist/index.html` e `dist/pt/index.html`. O servidor precisa entregar `/pt/` a partir de `dist/pt/index.html`, sem uma regra de SPA que mande tudo para `/index.html`. O Railway já faz isso sem configuração: o Railpack serve o `dist` com Caddy e `try_files {path} {path}.html {path}/index.html /index.html`, então `/pt` e `/pt/` abrem o Soletrando.
 - **Dados salvos:** Recorde, Jogador e Sessão ficam separados por versão (`soletrando:*` e `soletrando-pt:*`).
 
 ## Reconhecimento de voz (Falar e Soletrar)

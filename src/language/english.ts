@@ -4,7 +4,7 @@ import { getWordHint } from '../data/wordHints'
 import { matchesExpectedLetter } from '../speech/letterNames'
 import { ENGLISH_RECOGNIZER } from '../speech/letterRecognition'
 import logoJogo from '../assets/logo-jogo.png'
-import heroAbelha from '../assets/hero-abelha.png'
+import heroAbelha from '../assets/hero-abelha-eua.png'
 import type { LanguagePack } from './types'
 
 const toUpperCase = (unit: string) => unit.toUpperCase()
@@ -26,7 +26,7 @@ export const english: LanguagePack = {
   accentButtons: [],
   strictTypingInput: false,
   logo: { src: logoJogo, alt: 'Jogo de Soletrar' },
-  hero: { src: heroAbelha, alt: 'Abelha de óculos escuros com microfone, blocos ABC e o logo Spelling Bee' },
+  hero: { src: heroAbelha, alt: 'Abelha de óculos escuros com microfone, blocos ABC, a bandeira dos Estados Unidos e o logo Spelling Bee' },
   showWhatsNew: true,
   texts: {
     typeWordPlaceholder: 'Digite a palavra em inglês',

@@ -2,6 +2,7 @@ import { getPortugueseWordsByDifficulty } from '../data/pt/words'
 import { PT_SPEAK_AND_SPELL_CATEGORIES, getPortugueseSpeakAndSpellWords } from '../data/pt/speakAndSpellCategories'
 import { getPortugueseWordHint } from '../data/pt/wordHints'
 import heroSoletrando from '../assets/pt/hero-soletrando.png'
+import logoSoletrando from '../assets/pt/logo-soletrando.png'
 import type { LanguagePack } from './types'
 
 // Nome de cada letra como o aluno fala ao soletrar.
@@ -69,7 +70,7 @@ export const portuguese: LanguagePack = {
   recognizer: null,
   accentButtons: ['á', 'â', 'ã', 'é', 'ê', 'í', 'ó', 'ô', 'õ', 'ú', 'ç'],
   strictTypingInput: true,
-  logo: null,
+  logo: { src: logoSoletrando, alt: 'Soletrando' },
   hero: { src: heroSoletrando, alt: 'Abelha de óculos escuros com microfone, blocos ABC e o logo Soletrando' },
   homeNotice: 'como-funciona-soletrando',
   texts: {

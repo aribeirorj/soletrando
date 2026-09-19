@@ -34,10 +34,11 @@ afterEach(() => {
 })
 
 describe('HomeScreen no Soletrando', () => {
-  test('shows the Soletrando name', () => {
+  test('shows the Soletrando logo above the Recorde, not the Spelling Bee one', () => {
     render(<HomeScreen />)
 
-    expect(screen.getByRole('heading', { name: 'Soletrando' })).toBeTruthy()
+    const logo = screen.getByAltText('Soletrando') as HTMLImageElement
+    expect(logo.src).toContain('logo-soletrando')
     expect(screen.queryByAltText('Jogo de Soletrar')).toBeNull()
   })
 

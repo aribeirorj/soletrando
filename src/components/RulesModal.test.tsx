@@ -35,12 +35,12 @@ describe('RulesButton', () => {
     expect(dialog.textContent).toContain('10 pontos')
   })
 
-  test('shows Speak and Spell rules without hint', () => {
+  test('shows Spell rules without hint', () => {
     render(<RulesButton mode="falar-soletrar" difficulty="dificil" />)
 
     const dialog = openRules()
 
-    expect(dialog.textContent).toContain('Falar e Soletrar')
+    expect(dialog.textContent).toContain('Regras — Soletrar')
     expect(dialog.textContent).toContain('5 segundos por letra')
     expect(dialog.textContent).toContain('mínimo de 30 segundos')
     expect(dialog.textContent).toContain('3 tentativas')

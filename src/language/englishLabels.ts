@@ -26,7 +26,7 @@ export const ENGLISH_LABELS: LanguageLabels = {
   modes: {
     'ouvir-digitar': 'Listen and Type',
     'letras-embaralhadas': 'Unscramble',
-    'falar-soletrar': 'Speak and Spell',
+    'falar-soletrar': 'Spell',
   },
   difficulty: 'Difficulty',
   difficulties: { facil: 'Easy', medio: 'Medium', dificil: 'Hard' },

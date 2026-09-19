@@ -15,7 +15,7 @@ export interface LanguageArt {
 export interface LanguageTexts {
   typeWordPlaceholder: string
   howToPlay: Record<GameMode, string>
-  // Falar e Soletrar, no modo voz.
+  // Soletrar, no modo voz.
   speakInstruction: string
   // Entre parênteses na regra de Pontos por letra.
   spellingUnitsNote: string

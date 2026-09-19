@@ -7,7 +7,7 @@ function choose(label: 'Play Solo' | 'Play with the Class') {
 }
 
 function news() {
-  return screen.queryByRole('region', { name: 'Novidades no Falar e Soletrar' })
+  return screen.queryByRole('region', { name: 'Novidades no Soletrar' })
 }
 
 describe('HomeScreen — novidades', () => {
@@ -90,16 +90,16 @@ describe('HomeScreen — regras no Jogo Individual', () => {
     return screen.queryByRole('button', { name: 'See rules' })
   }
 
-  test('shows the rules button once Falar e Soletrar is chosen', () => {
+  test('shows the rules button once Soletrar is chosen', () => {
     render(<HomeScreen />)
     choose('Play Solo')
     expect(rulesButton()).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Speak and Spell' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Spell' }))
     fireEvent.click(rulesButton()!)
 
     const dialog = screen.getByRole('dialog')
-    expect(dialog.textContent).toContain('Regras — Falar e Soletrar')
+    expect(dialog.textContent).toContain('Regras — Soletrar')
     expect(dialog.textContent).toContain('Recorde')
   })
 

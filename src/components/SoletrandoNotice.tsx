@@ -20,7 +20,7 @@ export function SoletrandoNotice({ onClose }: SoletrandoNoticeProps) {
         <strong>Letras Embaralhadas:</strong> letra com acento e hífen são blocos próprios (É, Ç, -).
       </li>
       <li>
-        <strong>Falar e Soletrar:</strong> o aluno fala cada letra, dizendo o acento ("é com acento agudo", "cê
+        <strong>Soletrar:</strong> o aluno fala cada letra, dizendo o acento ("é com acento agudo", "cê
         cedilha") e o hífen. Alguém marca <strong>Correto</strong> ou <strong>Incorreto</strong> para cada letra.
       </li>
       <li>

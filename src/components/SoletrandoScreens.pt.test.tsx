@@ -41,6 +41,13 @@ describe('HomeScreen no Soletrando', () => {
     expect(screen.queryByAltText('Jogo de Soletrar')).toBeNull()
   })
 
+  test('shows the bee with the Soletrando logo, not the Spelling Bee one', () => {
+    render(<HomeScreen />)
+
+    expect(screen.getByAltText('Abelha de óculos escuros com microfone, blocos ABC e o logo Soletrando')).toBeTruthy()
+    expect(screen.queryByAltText(/logo Spelling Bee/)).toBeNull()
+  })
+
   test('does not show the Spelling Bee news', () => {
     render(<HomeScreen />)
 

@@ -6,6 +6,8 @@ import { ScoreBoard } from './ScoreBoard'
 import { Timer } from './Timer'
 import { HintButton } from './HintButton'
 import { QuestionFeedback } from './QuestionFeedback'
+import { displayUnits } from '../language/spelledUnits'
+import { getLanguage } from '../language/current'
 
 const QUESTION_SECONDS = QUESTION_SECONDS_BY_MODE['letras-embaralhadas']
 
@@ -15,7 +17,7 @@ interface LetterBlock {
 }
 
 function shuffleWord(word: string): LetterBlock[] {
-  const original = word.split('')
+  const original = displayUnits(word)
   let shuffled = [...original]
 
   for (let attempt = 0; attempt < 10; attempt++) {
@@ -24,7 +26,7 @@ function shuffleWord(word: string): LetterBlock[] {
       const j = Math.floor(Math.random() * (i + 1))
       ;[shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]]
     }
-    if (shuffled.join('') !== word || word.length <= 1) break
+    if (shuffled.join('') !== original.join('') || original.length <= 1) break
   }
 
   return shuffled.map((letter, index) => ({ id: index, letter }))
@@ -39,6 +41,7 @@ export function UnscrambleGame() {
   const turnLength = useGameStore((s) => s.turnLength)
   const questionsAnsweredInTurn = useGameStore((s) => s.questionsAnsweredInTurn)
   const finishTurn = useSessionStore((s) => s.finishTurn)
+  const labels = getLanguage().labels
 
   const { remaining, reset } = useCountdown({ seconds: QUESTION_SECONDS, onExpire: handleTimeout })
 
@@ -56,7 +59,7 @@ export function UnscrambleGame() {
   }, [currentWord])
 
   useEffect(() => {
-    if (currentWord && placed.length > 0 && placed.length === currentWord.text.length) {
+    if (currentWord && placed.length > 0 && placed.length === shuffled.length) {
       submitAnswer(placed.map((b) => b.letter).join(''))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -96,8 +99,10 @@ export function UnscrambleGame() {
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-10">
       <ScoreBoard />
       <p className="text-sm text-muted-foreground">
-        Pergunta {turnLength !== null ? Math.min(questionsAnsweredInTurn + 1, turnLength) : questionsAnsweredInTurn + 1}
-        {turnLength !== null && ` de ${turnLength}`}
+        {labels.question(
+          turnLength !== null ? Math.min(questionsAnsweredInTurn + 1, turnLength) : questionsAnsweredInTurn + 1,
+          turnLength,
+        )}
       </p>
       <Timer remaining={remaining} total={QUESTION_SECONDS} />
 
@@ -137,7 +142,7 @@ export function UnscrambleGame() {
         onClick={handleClear}
         className="text-sm text-muted-foreground underline"
       >
-        Limpar
+        {labels.clear}
       </button>
 
       <HintButton key={currentWord.text} word={currentWord.text} />
@@ -147,7 +152,7 @@ export function UnscrambleGame() {
           status={status}
           correctAnswer={currentWord.text}
           onNext={handleNext}
-          nextLabel={isTurnComplete ? 'Ver resultado da rodada' : 'Próxima palavra'}
+          nextLabel={isTurnComplete ? labels.seeTurnResult : labels.nextWord}
         />
       )}
     </div>

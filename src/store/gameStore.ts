@@ -1,12 +1,15 @@
 import { create } from 'zustand'
-import { getWordsByDifficulty } from '../data/words'
-import { getSpeakAndSpellWords } from '../data/speakAndSpellCategories'
+import { getLanguage, storageKey } from '../language/current'
+import { spelledUnits } from '../language/spelledUnits'
 import type { Difficulty, GameMode, GameStatus, Word } from '../types'
 
 const SPEAK_AND_SPELL_DIFFICULTY: Difficulty = 'dificil'
 
 function getWordPool(mode: GameMode, difficulty: Difficulty, category: string[] | null): Word[] {
-  return mode === 'falar-soletrar' ? getSpeakAndSpellWords(category) : getWordsByDifficulty(difficulty)
+  const language = getLanguage()
+  return mode === 'falar-soletrar'
+    ? language.getSpeakAndSpellWords(category)
+    : language.getWordsByDifficulty(difficulty)
 }
 
 export function pickNextRandomWord(pool: Word[], previous: Word | null): Word {
@@ -21,8 +24,13 @@ export function pickNextRandomWord(pool: Word[], previous: Word | null): Word {
   return candidates[Math.floor(Math.random() * candidates.length)]
 }
 
+// Sinais gráficos e hífen contam; NFC faz o acento digitado separado valer como o composto.
+function canonicalAnswer(text: string): string {
+  return text.trim().normalize('NFC').toLowerCase()
+}
+
 export function isAnswerCorrect(answer: string, target: string): boolean {
-  return answer.trim().toLowerCase() === target.trim().toLowerCase()
+  return canonicalAnswer(answer) === canonicalAnswer(target)
 }
 
 const BASE_SCORE_BY_DIFFICULTY: Record<Difficulty, number> = {
@@ -48,7 +56,7 @@ export const SPEAK_AND_SPELL_SECONDS_PER_LETTER = 5
 
 // Falar e Soletrar: 5 s por letra, sem ficar abaixo do tempo mínimo do modo.
 export function getSpellingSeconds(wordText: string): number {
-  const letterCount = wordText.replace(/ /g, '').length
+  const letterCount = spelledUnits(wordText).length
   return Math.max(QUESTION_SECONDS_BY_MODE['falar-soletrar'], letterCount * SPEAK_AND_SPELL_SECONDS_PER_LETTER)
 }
 
@@ -56,12 +64,12 @@ export function computeNextStreak(currentStreak: number, wasCorrect: boolean): n
   return wasCorrect ? currentStreak + 1 : 0
 }
 
-const HIGH_SCORE_KEY = 'soletrando:highScore'
+const HIGH_SCORE_KEY = 'highScore'
 let memoryHighScore = 0
 
 function loadHighScore(): number {
   try {
-    const raw = localStorage.getItem(HIGH_SCORE_KEY)
+    const raw = localStorage.getItem(storageKey(HIGH_SCORE_KEY))
     return raw !== null ? Number(raw) || 0 : memoryHighScore
   } catch {
     return memoryHighScore
@@ -71,18 +79,18 @@ function loadHighScore(): number {
 function saveHighScore(value: number): void {
   memoryHighScore = value
   try {
-    localStorage.setItem(HIGH_SCORE_KEY, String(value))
+    localStorage.setItem(storageKey(HIGH_SCORE_KEY), String(value))
   } catch {
     // fallback silencioso: valor já retido em memoryHighScore
   }
 }
 
-const PLAYER_NAME_KEY = 'soletrando:playerName'
+const PLAYER_NAME_KEY = 'playerName'
 let memoryPlayerName = ''
 
 function loadPlayerName(): string {
   try {
-    return localStorage.getItem(PLAYER_NAME_KEY) ?? memoryPlayerName
+    return localStorage.getItem(storageKey(PLAYER_NAME_KEY)) ?? memoryPlayerName
   } catch {
     return memoryPlayerName
   }
@@ -91,7 +99,7 @@ function loadPlayerName(): string {
 function savePlayerName(value: string): void {
   memoryPlayerName = value
   try {
-    localStorage.setItem(PLAYER_NAME_KEY, value)
+    localStorage.setItem(storageKey(PLAYER_NAME_KEY), value)
   } catch {
     // fallback silencioso: valor já retido em memoryPlayerName
   }

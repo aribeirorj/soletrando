@@ -6,6 +6,7 @@ import {
   computeQuestionScore,
 } from '../store/gameStore'
 import { MAX_ATTEMPTS } from '../store/spellingProgress'
+import { getLanguage } from '../language/current'
 import type { Difficulty, GameMode } from '../types'
 import { HelpCircleIcon } from './icons'
 
@@ -15,21 +16,19 @@ const MODE_LABELS: Record<GameMode, string> = {
   'falar-soletrar': 'Falar e Soletrar',
 }
 
-const HOW_TO_PLAY: Record<GameMode, string> = {
-  'ouvir-digitar': 'Ouça a palavra em inglês e digite como ela se escreve.',
-  'letras-embaralhadas': 'Coloque as letras embaralhadas na ordem certa para formar a palavra.',
-  'falar-soletrar': 'Fale em inglês cada letra da palavra. Pelo microfone, o app confere cada letra e avança sozinho.',
-}
-
 function getRules(mode: GameMode, difficulty: Difficulty): string[] {
+  const language = getLanguage()
+  const howToPlay = language.texts.howToPlay[mode]
   const seconds = `Você tem ${QUESTION_SECONDS_BY_MODE[mode]} segundos para cada palavra.`
 
   if (mode === 'falar-soletrar') {
     return [
-      HOW_TO_PLAY[mode],
+      howToPlay,
       `Você tem ${SPEAK_AND_SPELL_SECONDS_PER_LETTER} segundos por letra (mínimo de ${QUESTION_SECONDS_BY_MODE[mode]} segundos por palavra).`,
-      `Cada letra tem até ${MAX_ATTEMPTS} tentativas. Sem microfone, alguém marca Correto ou Incorreto.`,
-      `Cada letra certa vale ${SPEAK_AND_SPELL_POINTS_PER_LETTER} pontos na hora (espaços não contam). Letra errada não pontua.`,
+      language.recognizer
+        ? `Cada letra tem até ${MAX_ATTEMPTS} tentativas. Sem microfone, alguém marca Correto ou Incorreto.`
+        : 'Alguém marca Correto ou Incorreto para cada letra.',
+      `Cada letra certa vale ${SPEAK_AND_SPELL_POINTS_PER_LETTER} pontos na hora (${language.texts.spellingUnitsNote}). Letra errada não pontua.`,
       'A palavra só conta como acerto se todas as letras estiverem certas.',
       'Se o tempo acabar, conta como erro.',
       'Ao terminar a palavra, o jogo passa sozinho para a próxima.',
@@ -38,7 +37,7 @@ function getRules(mode: GameMode, difficulty: Difficulty): string[] {
 
   const points = computeQuestionScore(difficulty, false)
   return [
-    HOW_TO_PLAY[mode],
+    howToPlay,
     seconds,
     `Cada acerto vale ${points} pontos.`,
     `Usar a Dica reduz os pontos pela metade (${computeQuestionScore(difficulty, true)} pontos).`,
@@ -74,8 +73,8 @@ export function RulesButton({ mode, difficulty, playMode = 'turma' }: RulesButto
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        aria-label="Ver regras"
-        title="Ver regras"
+        aria-label={getLanguage().labels.seeRules}
+        title={getLanguage().labels.seeRules}
         className="rounded-full p-1 text-muted-foreground hover:bg-accent hover:text-accent-foreground"
       >
         <HelpCircleIcon width={24} height={24} />

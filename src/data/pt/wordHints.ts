@@ -1,0 +1,73 @@
+// Dicas das palavras do Soletrando nos modos "Ouvir e Digitar" e "Letras Embaralhadas".
+// Nunca devem conter a própria palavra (nem sem acento).
+const PT_WORD_HINTS: Record<string, string> = {
+  // Fácil
+  chuva: 'Água que cai das nuvens',
+  galinha: 'Ave da fazenda que bota ovos',
+  cachorro: 'Animal de estimação que late',
+  telhado: 'Parte de cima da casa, que protege da chuva',
+  abelha: 'Inseto que faz mel',
+  ninho: 'Casinha que o passarinho faz para chocar os ovos',
+  folha: 'Parte verde da planta; também é a de papel no caderno',
+  queijo: 'Alimento feito de leite, que o rato adora',
+  guerra: 'Luta armada entre países; o contrário da paz',
+  carro: 'Veículo de quatro rodas que anda nas ruas',
+  máquina: 'Aparelho que faz um trabalho, como a de lavar roupa',
+  lâmpada: 'Objeto que ilumina a casa quando acendemos a luz',
+  árvore: 'Planta grande, com tronco, galhos e folhas',
+  café: 'Bebida preta e quente que muitos adultos tomam de manhã',
+  sofá: 'Assento macio da sala onde cabem várias pessoas',
+  pão: 'Alimento feito de farinha e assado na padaria',
+  limão: 'Fruta verde e azeda usada para fazer suco',
+  manhã: 'Parte do dia que vem antes da tarde',
+  irmã: 'Menina que é filha dos mesmos pais que você',
+  chocolate: 'Doce feito de cacau',
+
+  // Médio
+  cabeça: 'Parte do corpo onde ficam os olhos, o nariz e a boca',
+  almoço: 'Refeição do meio do dia',
+  açúcar: 'Deixa o suco e o bolo doces',
+  praça: 'Lugar público da cidade, com bancos e árvores',
+  enxada: 'Ferramenta usada para cavar a terra na roça',
+  xícara: 'Recipiente pequeno com alça para tomar chá',
+  peixe: 'Animal que vive na água e respira por guelras',
+  caixa: 'Recipiente de papelão para guardar coisas',
+  abacaxi: 'Fruta amarela com coroa de folhas e casca espinhosa',
+  lixo: 'O que não serve mais e vai para a coleta',
+  girafa: 'Animal de pescoço muito comprido',
+  gelo: 'Água congelada',
+  relógio: 'Objeto que mostra as horas',
+  laranja: 'Fruta cítrica muito usada em sucos; também é uma cor',
+  canjica: 'Doce de milho branco com leite, comum nas festas juninas',
+  jeito: 'Maneira de fazer alguma coisa',
+  princesa: 'Filha do rei e da rainha',
+  beleza: 'Qualidade do que é bonito',
+  cozinha: 'Cômodo da casa onde se preparam as refeições',
+  pássaro: 'Animal com penas e bico, que voa',
+
+  // Difícil
+  nascer: 'Vir ao mundo; também é o que o sol faz de manhã',
+  piscina: 'Tanque com água onde se nada',
+  adolescente: 'Quem já não é criança e ainda não é adulto',
+  consciência: 'Noção do que é certo e do que é errado',
+  exceção: 'Aquilo que foge à regra',
+  excelente: 'Muito bom, ótimo',
+  ascensão: 'Ato de subir, de se elevar',
+  excursão: 'Passeio em grupo, como os da escola',
+  obsessão: 'Ideia fixa, que não sai da cabeça',
+  paralisar: 'Fazer parar; deixar sem movimento',
+  pesquisar: 'Procurar informações sobre um assunto',
+  hesitar: 'Ficar em dúvida antes de agir',
+  saúde: 'Estado de quem está bem, sem doenças',
+  faísca: 'Pequena fagulha de fogo',
+  egoísta: 'Quem só pensa em si mesmo',
+  ruído: 'Barulho',
+  privilégio: 'Vantagem que só alguns têm',
+  cabeleireiro: 'Profissional que corta e penteia o cabelo',
+  beneficente: 'Que ajuda quem precisa sem cobrar nada, como uma festa para arrecadar doações',
+  'arco-íris': 'Faixa colorida que aparece no céu depois da chuva',
+}
+
+export function getPortugueseWordHint(word: string): string | null {
+  return PT_WORD_HINTS[word.normalize('NFC').toLowerCase()] ?? null
+}

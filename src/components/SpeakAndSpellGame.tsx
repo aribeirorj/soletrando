@@ -17,6 +17,9 @@ import { useCountdown } from '../hooks/useCountdown'
 import { useHeardLetters } from '../hooks/useHeardLetters'
 import { useSpeech } from '../hooks/useSpeech'
 import { isRecognitionUnavailable } from '../speech/letterRecognition'
+import { displayUnits, spelledUnits } from '../language/spelledUnits'
+import { getLanguage } from '../language/current'
+import type { LanguageLabels } from '../language/types'
 import { ScoreBoard } from './ScoreBoard'
 import { Timer } from './Timer'
 import { QuestionFeedback } from './QuestionFeedback'
@@ -37,14 +40,18 @@ function spellableIndices(letters: string[]): number[] {
   }, [])
 }
 
-function describeBalloon(previewLetter: string | null, feedback: SpellingFeedback | null): HeardBalloon {
+function describeBalloon(
+  previewLetter: string | null,
+  feedback: SpellingFeedback | null,
+  unitLabel: (unit: string) => string,
+): HeardBalloon {
   if (previewLetter) return { letter: previewLetter, tone: 'neutral', message: null }
   if (feedback?.kind === 'correct') return { letter: feedback.letter, tone: 'match', message: null }
   if (feedback?.kind === 'retry') {
     return { letter: feedback.heard, tone: 'neutral', message: `Tente de novo (${feedback.attempt} de ${MAX_ATTEMPTS})` }
   }
   if (feedback?.kind === 'failed') {
-    return { letter: feedback.heard, tone: 'miss', message: `A letra certa era ${feedback.expected.toUpperCase()}` }
+    return { letter: feedback.heard, tone: 'miss', message: `A letra certa era ${unitLabel(feedback.expected)}` }
   }
   return { letter: null, tone: 'neutral', message: null }
 }
@@ -61,23 +68,25 @@ function describeWordResult(
   wordText: string,
   spellable: string[],
   progress: SpellingProgressState,
+  unitLabel: (unit: string) => string,
+  labels: LanguageLabels,
 ): { message: ReactNode; detail: string | null } {
   const earned = progress.correctLetters * SPEAK_AND_SPELL_POINTS_PER_LETTER
   const total = spellable.length * SPEAK_AND_SPELL_POINTS_PER_LETTER
   const word = `Palavra: ${wordText.toUpperCase()}`
   const points = earned === 0 ? 'nenhum ponto' : `+${earned} de ${total} pontos`
 
-  if (status === 'acertou') return { message: `Acertou! +${earned} pontos`, detail: null }
+  if (status === 'acertou') return { message: labels.wordCorrect(earned), detail: null }
 
   if (status === 'tempo-esgotado') {
     const stoppedAt = spellable[progress.letterIndex]
     return {
-      message: stoppedAt ? `O tempo acabou na letra ${stoppedAt.toUpperCase()}.` : 'O tempo acabou.',
+      message: stoppedAt ? `O tempo acabou na letra ${unitLabel(stoppedAt)}.` : 'O tempo acabou.',
       detail: `${word} · ${points}`,
     }
   }
 
-  const wrongLetters = progress.wrongIndices.map((index) => spellable[index].toUpperCase())
+  const wrongLetters = progress.wrongIndices.map((index) => unitLabel(spellable[index]))
   const single = wrongLetters.length === 1
   const why = single ? 'a letra errada não pontua' : 'as letras erradas não pontuam'
   return {
@@ -101,12 +110,16 @@ export function SpeakAndSpellGame() {
   const turnLength = useGameStore((s) => s.turnLength)
   const questionsAnsweredInTurn = useGameStore((s) => s.questionsAnsweredInTurn)
   const finishTurn = useSessionStore((s) => s.finishTurn)
+  const language = getLanguage()
+  const labels = language.labels
+  // Sem reconhecimento no Idioma, só os botões Correto/Incorreto.
+  const voiceAvailable = language.recognizer !== null
 
   const seconds = currentWord ? getSpellingSeconds(currentWord.text) : QUESTION_SECONDS_BY_MODE['falar-soletrar']
   const { remaining, reset } = useCountdown({ seconds, onExpire: handleTimeout })
 
   const spellable = useMemo(
-    () => (currentWord ? currentWord.text.replace(/ /g, '').toLowerCase().split('') : []),
+    () => (currentWord ? spelledUnits(currentWord.text) : []),
     [currentWord],
   )
   const [progress, dispatch] = useReducer(spellingProgressReducer, INITIAL_SPELLING_PROGRESS)
@@ -117,17 +130,18 @@ export function SpeakAndSpellGame() {
     if (currentWord) reset(getSpellingSeconds(currentWord.text))
   }, [currentWord, reset])
 
-  const { isSupported: canSpeak, isSpeaking, speak } = useSpeech()
+  const { isSupported: canSpeak, isSpeaking, speak } = useSpeech(language.speechLang)
   const heard = useHeardLetters({
     question: currentWord,
     letterIndex: progress.letterIndex,
     active: status === 'jogando',
     muted: isSpeaking,
-    enabled: inputMode === 'voz',
-    onFinal: (letters) => dispatch({ type: 'attempt', letters, spellable }),
+    enabled: voiceAvailable && inputMode === 'voz',
+    onFinal: (letters) => dispatch({ type: 'attempt', letters, spellable, matches: language.matchesExpectedUnit }),
+    recognizer: language.recognizer ?? undefined,
   })
   const micUnavailable = isRecognitionUnavailable(heard.status)
-  const mode: InputMode = micUnavailable ? 'botoes' : inputMode
+  const mode: InputMode = !voiceAvailable || micUnavailable ? 'botoes' : inputMode
 
   // Cada letra certa pontua na hora. A referência guarda quantas letras da palavra já foram
   // creditadas; no reset da palavra o contador volta a 0 e a referência acompanha.
@@ -145,8 +159,8 @@ export function SpeakAndSpellGame() {
   // Depois da 3ª tentativa errada, o app fala a letra certa para o aluno aprender.
   useEffect(() => {
     const feedback = progress.feedback
-    if (feedback?.kind === 'failed' && feedback.heard !== null) speak(feedback.expected.toUpperCase())
-  }, [progress.feedback, speak])
+    if (feedback?.kind === 'failed' && feedback.heard !== null) speak(language.speakUnit(feedback.expected))
+  }, [progress.feedback, speak, language])
 
   const handleNext = useCallback(() => {
     const { turnLength: length, questionsAnsweredInTurn: answered } = useGameStore.getState()
@@ -167,7 +181,7 @@ export function SpeakAndSpellGame() {
   if (!currentWord) return null
 
   const isTurnComplete = turnLength !== null && questionsAnsweredInTurn >= turnLength
-  const letters = currentWord.text.split('')
+  const letters = displayUnits(currentWord.text)
   const displayIndices = spellableIndices(letters)
   const currentDisplayIndex = displayIndices[progress.letterIndex]
   const doneUntil = currentDisplayIndex ?? letters.length
@@ -176,7 +190,9 @@ export function SpeakAndSpellGame() {
   const isPlaying = status === 'jogando'
   const showSuggestion = progress.consecutiveFailedLetters >= SUGGEST_BUTTONS_AFTER_FAILED_LETTERS
   const markedWrong = progress.feedback?.kind === 'failed' && progress.feedback.heard === null
-  const wordResult = isPlaying ? null : describeWordResult(status, currentWord.text, spellable, progress)
+  const wordResult = isPlaying
+    ? null
+    : describeWordResult(status, currentWord.text, spellable, progress, language.unitLabel, labels)
 
   const mark = (correct: boolean) => dispatch({ type: 'mark', correct, spellable })
 
@@ -184,8 +200,10 @@ export function SpeakAndSpellGame() {
     <div className="mx-auto flex max-w-md flex-col items-center gap-4 px-4 py-10">
       <ScoreBoard />
       <p className="text-sm text-muted-foreground">
-        Pergunta {turnLength !== null ? Math.min(questionsAnsweredInTurn + 1, turnLength) : questionsAnsweredInTurn + 1}
-        {turnLength !== null && ` de ${turnLength}`}
+        {labels.question(
+          turnLength !== null ? Math.min(questionsAnsweredInTurn + 1, turnLength) : questionsAnsweredInTurn + 1,
+          turnLength,
+        )}
       </p>
       <Timer remaining={remaining} total={seconds} />
 
@@ -208,26 +226,26 @@ export function SpeakAndSpellGame() {
         ))}
       </div>
       <p className="text-sm text-muted-foreground">
-        Letra {Math.min(progress.letterIndex + 1, spellable.length)} de {spellable.length}
+        {labels.letterCounter(Math.min(progress.letterIndex + 1, spellable.length), spellable.length)}
       </p>
       {canSpeak && expectedLetter && isPlaying && (
         <button
           type="button"
-          onClick={() => speak(expectedLetter.toUpperCase())}
+          onClick={() => speak(language.speakUnit(expectedLetter))}
           className="flex items-center gap-2 rounded-md border border-primary px-4 py-2 text-sm font-semibold text-primary hover:bg-accent"
         >
-          <SpeakerIcon /> Ouvir a pronúncia
+          <SpeakerIcon /> {labels.hearPronunciation}
         </button>
       )}
       <p className="text-xs text-muted-foreground">
         {mode === 'voz'
-          ? 'Fale em inglês a letra destacada.'
+          ? language.texts.speakInstruction
           : 'Peça para o aluno falar a letra em voz alta e confirme abaixo.'}
       </p>
 
       <HeardLetterPanel
         status={heard.status}
-        balloon={mode === 'voz' && isPlaying ? describeBalloon(heard.previewLetter, progress.feedback) : null}
+        balloon={mode === 'voz' && isPlaying ? describeBalloon(heard.previewLetter, progress.feedback, language.unitLabel) : null}
         heardHistory={heard.heardHistory}
       />
 
@@ -235,7 +253,7 @@ export function SpeakAndSpellGame() {
         <p className={`text-sm ${showSuggestion ? 'font-semibold text-brand-red' : 'text-muted-foreground'}`}>
           {showSuggestion && 'O microfone não está me ajudando? '}
           <button type="button" onClick={() => setInputMode('botoes')} className="text-primary underline">
-            Usar botões Certo/Errado
+            {labels.useButtons}
           </button>
         </p>
       )}
@@ -249,7 +267,7 @@ export function SpeakAndSpellGame() {
               disabled={!isPlaying}
               className="flex items-center gap-2 rounded-md border border-green-600 bg-green-500 px-4 py-2 text-lg font-semibold text-white disabled:opacity-50"
             >
-              <CheckCircleIcon /> Correto
+              <CheckCircleIcon /> {labels.markCorrect}
             </button>
             <button
               type="button"
@@ -257,15 +275,15 @@ export function SpeakAndSpellGame() {
               disabled={!isPlaying}
               className="flex items-center gap-2 rounded-md border border-brand-redDark bg-brand-red px-4 py-2 text-lg font-semibold text-white disabled:opacity-50"
             >
-              <XCircleIcon /> Incorreto
+              <XCircleIcon /> {labels.markIncorrect}
             </button>
           </div>
 
           {markedWrong && isPlaying && <p className="text-sm text-brand-red">Essa letra ficou incorreta.</p>}
 
-          {!micUnavailable && isPlaying && (
+          {voiceAvailable && !micUnavailable && isPlaying && (
             <button type="button" onClick={() => setInputMode('voz')} className="text-sm text-primary underline">
-              Voltar a falar
+              {labels.backToSpeaking}
             </button>
           )}
         </>
@@ -276,7 +294,7 @@ export function SpeakAndSpellGame() {
           status={status}
           correctAnswer={currentWord.text}
           onNext={handleNext}
-          nextLabel={isTurnComplete ? 'Ver resultado da rodada' : 'Próxima palavra'}
+          nextLabel={isTurnComplete ? labels.seeTurnResult : labels.nextWord}
           message={wordResult.message}
         >
           {wordResult.detail && <p className="text-center text-sm">{wordResult.detail}</p>}

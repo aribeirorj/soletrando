@@ -1,6 +1,8 @@
 import type { LetterRecognitionStatus } from '../speech/letterRecognition'
+import { getLanguage } from '../language/current'
 import { CheckCircleIcon, MicrophoneIcon } from './icons'
 
+// Avisos em português nas duas Versões; só o "Ouvindo…" é rótulo (vem do Idioma).
 const STATUS_TEXT: Record<LetterRecognitionStatus, string> = {
   idle: '',
   loading: 'Preparando reconhecimento de voz… (a primeira vez pode demorar)',
@@ -34,6 +36,7 @@ interface HeardLetterPanelProps {
 export function HeardLetterPanel({ status, balloon, heardHistory }: HeardLetterPanelProps) {
   const isAvailable = status === 'idle' || status === 'loading' || status === 'listening'
   const history = heardHistory.slice(-HISTORY_LIMIT)
+  const labels = getLanguage().labels
 
   return (
     <div className="flex flex-col items-center gap-2">
@@ -43,13 +46,13 @@ export function HeardLetterPanel({ status, balloon, heardHistory }: HeardLetterP
           data-testid="heard-letter"
           className={`flex min-h-24 w-48 flex-col items-center justify-center rounded-lg border-2 px-4 py-2 ${TONE_CLASSES[balloon.tone]}`}
         >
-          <span className="text-xs font-medium">Você falou:</span>
+          <span className="text-xs font-medium">{labels.youSaid}</span>
           <span className="flex items-center gap-2 text-4xl font-bold">
             {balloon.letter ? balloon.letter.toUpperCase() : '—'}
             {balloon.tone === 'match' && (
               <>
                 <CheckCircleIcon width={28} height={28} />
-                <span className="sr-only">confere</span>
+                <span className="sr-only">{labels.matches}</span>
               </>
             )}
           </span>
@@ -61,10 +64,10 @@ export function HeardLetterPanel({ status, balloon, heardHistory }: HeardLetterP
         {status !== 'idle' && (
           <span className="flex items-center gap-1">
             <MicrophoneIcon width={14} height={14} />
-            {STATUS_TEXT[status]}
+            {status === 'listening' ? labels.listening : STATUS_TEXT[status]}
           </span>
         )}
-        {history.length > 0 && <span>Ouvi: {history.map((letter) => letter.toUpperCase()).join(' · ')}</span>}
+        {history.length > 0 && <span>{labels.heard(history.map((letter) => letter.toUpperCase()).join(' · '))}</span>}
       </div>
     </div>
   )

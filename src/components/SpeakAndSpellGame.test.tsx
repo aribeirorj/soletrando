@@ -34,19 +34,19 @@ function balloon() {
 }
 
 function correctButton() {
-  return screen.queryByRole('button', { name: 'Correto' })
+  return screen.queryByRole('button', { name: 'Correct' })
 }
 
 function clickCorrect() {
-  fireEvent.click(screen.getByRole('button', { name: 'Correto' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Correct' }))
 }
 
 function clickIncorrect() {
-  fireEvent.click(screen.getByRole('button', { name: 'Incorreto' }))
+  fireEvent.click(screen.getByRole('button', { name: 'Incorrect' }))
 }
 
 function letterCounter() {
-  return screen.getByText(/^Letra \d+ de \d+$/).textContent
+  return screen.getByText(/^Letter \d+ of \d+$/).textContent
 }
 
 beforeEach(() => {
@@ -77,7 +77,7 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
   test('hides the Correto/Incorreto buttons while the microphone works', () => {
     render(<SpeakAndSpellGame />)
 
-    expect(screen.getByText('Ouvindo…')).toBeTruthy()
+    expect(screen.getByText('Listening…')).toBeTruthy()
     expect(correctButton()).toBeNull()
   })
 
@@ -86,9 +86,9 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
 
     hear(['c'])
 
-    expect(letterCounter()).toBe('Letra 2 de 3')
+    expect(letterCounter()).toBe('Letter 2 of 3')
     expect(balloon().textContent).toContain('C')
-    expect(balloon().textContent).toContain('confere')
+    expect(balloon().textContent).toContain('matches')
   })
 
   test('a wrong letter asks to try again and stays on the letter', () => {
@@ -96,7 +96,7 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
 
     hear(['k'])
 
-    expect(letterCounter()).toBe('Letra 1 de 3')
+    expect(letterCounter()).toBe('Letter 1 of 3')
     expect(balloon().textContent).toContain('K')
     expect(balloon().textContent).toContain('Tente de novo (2 de 3)')
   })
@@ -121,7 +121,7 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
     hear(['k'])
     hear(['k'])
 
-    expect(letterCounter()).toBe('Letra 2 de 3')
+    expect(letterCounter()).toBe('Letter 2 of 3')
     expect(balloon().textContent).toContain('A letra certa era C')
 
     hear(['a', 't'])
@@ -137,7 +137,7 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
 
     hear(['c'])
     expect(useGameStore.getState().score).toBe(10)
-    expect(screen.getByText('Pontos: 10')).toBeTruthy()
+    expect(screen.getByText('Points: 10')).toBeTruthy()
 
     hear(['k'])
     expect(useGameStore.getState().score).toBe(10)
@@ -173,7 +173,7 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
     hear(['c'], false)
 
     expect(balloon().textContent).toContain('C')
-    expect(letterCounter()).toBe('Letra 1 de 3')
+    expect(letterCounter()).toBe('Letter 1 of 3')
   })
 
   test('lists every letter heard in the question', () => {
@@ -182,7 +182,7 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
     hear(['c'])
     hear(['k'])
 
-    expect(screen.getByText('Ouvi: C · K')).toBeTruthy()
+    expect(screen.getByText('Heard: C · K')).toBeTruthy()
   })
 
   test('starts fresh when the word changes', () => {
@@ -191,8 +191,8 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
 
     act(() => useGameStore.setState({ currentWord: { text: 'dog', difficulty: 'dificil' } }))
 
-    expect(letterCounter()).toBe('Letra 1 de 3')
-    expect(screen.queryByText(/Ouvi:/)).toBeNull()
+    expect(letterCounter()).toBe('Letter 1 of 3')
+    expect(screen.queryByText(/Heard:/)).toBeNull()
     expect(balloon().textContent).toContain('—')
   })
 
@@ -209,13 +209,13 @@ describe('SpeakAndSpellGame — correção pela voz', () => {
   test('switching to the buttons turns the microphone off, and it can come back', () => {
     render(<SpeakAndSpellGame />)
 
-    fireEvent.click(screen.getByRole('button', { name: 'Usar botões Certo/Errado' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Use Right/Wrong buttons' }))
 
     expect(stop).toHaveBeenCalled()
     expect(correctButton()).toBeTruthy()
-    expect(screen.queryByText('Ouvindo…')).toBeNull()
+    expect(screen.queryByText('Listening…')).toBeNull()
 
-    fireEvent.click(screen.getByRole('button', { name: 'Voltar a falar' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Back to speaking' }))
 
     expect(startLetterRecognition).toHaveBeenCalledTimes(2)
     expect(correctButton()).toBeNull()
@@ -237,7 +237,7 @@ describe('SpeakAndSpellGame — sem microfone', () => {
 
     expect(screen.getByText('Microfone bloqueado')).toBeTruthy()
     expect(screen.queryByTestId('heard-letter')).toBeNull()
-    expect(screen.queryByRole('button', { name: 'Voltar a falar' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Back to speaking' })).toBeNull()
 
     clickCorrect()
     clickCorrect()
@@ -331,7 +331,7 @@ describe('SpeakAndSpellGame — avanço automático', () => {
     render(<SpeakAndSpellGame />)
 
     hear(['c', 'a', 't'])
-    fireEvent.click(screen.getByRole('button', { name: 'Próxima palavra' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Next word' }))
     expect(useGameStore.getState().currentWord?.text).not.toBe('cat')
     const next = useGameStore.getState().currentWord
 
@@ -367,7 +367,7 @@ describe('SpeakAndSpellGame — ouvir a pronúncia', () => {
   }
 
   function speakerButton() {
-    return screen.getByRole('button', { name: 'Ouvir a pronúncia' })
+    return screen.getByRole('button', { name: 'Hear the pronunciation' })
   }
 
   beforeEach(() => {
@@ -440,19 +440,19 @@ describe('SpeakAndSpellGame — ouvir a pronúncia', () => {
 
     hear(['c', 'a', 't'])
 
-    expect(screen.queryByRole('button', { name: 'Ouvir a pronúncia' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Hear the pronunciation' })).toBeNull()
   })
 
   test('has no speaker button when the browser cannot speak', () => {
     render(<SpeakAndSpellGame />)
 
-    expect(screen.queryByRole('button', { name: 'Ouvir a pronúncia' })).toBeNull()
+    expect(screen.queryByRole('button', { name: 'Hear the pronunciation' })).toBeNull()
   })
 })
 
 describe('SpeakAndSpellGame — mensagem do fim da palavra', () => {
   function feedbackText() {
-    return screen.getByRole('button', { name: 'Próxima palavra' }).parentElement?.textContent ?? ''
+    return screen.getByRole('button', { name: 'Next word' }).parentElement?.textContent ?? ''
   }
 
   test('a right word shows the points earned', () => {
@@ -460,7 +460,7 @@ describe('SpeakAndSpellGame — mensagem do fim da palavra', () => {
 
     hear(['c', 'a', 't'])
 
-    expect(feedbackText()).toContain('Acertou! +30 pontos')
+    expect(feedbackText()).toContain('Correct! +30 points')
   })
 
   test('a wrong word says which letter was wrong and the points the others earned', () => {

@@ -3,21 +3,31 @@ import { useGameStore } from '../store/gameStore'
 import { useSessionStore } from '../store/sessionStore'
 import { useSpeech } from '../hooks/useSpeech'
 import type { Difficulty, GameMode } from '../types'
-import logoJogo from '../assets/logo-jogo.png'
+import { getLanguage } from '../language/current'
 import { HeroIllustration } from './HeroIllustration'
 import { RecordBadge } from './RecordBadge'
 import { OptionButton } from './OptionButton'
 import { GameOptionsFields, MODE_SELECTED_CLASS } from './GameOptionsFields'
 import { WhatsNewNotice } from './WhatsNewNotice'
+import { SoletrandoNotice } from './SoletrandoNotice'
+import type { HomeNotice } from '../language/types'
 import { RulesButton } from './RulesModal'
 import { PlayIcon, UserIcon, UsersIcon } from './icons'
+
+const HOME_NOTICES: Record<HomeNotice, typeof WhatsNewNotice> = {
+  novidades: WhatsNewNotice,
+  'como-funciona-soletrando': SoletrandoNotice,
+}
 
 export function HomeScreen() {
   const highScore = useGameStore((s) => s.highScore)
   const playerName = useGameStore((s) => s.playerName)
   const setPlayerName = useGameStore((s) => s.setPlayerName)
   const startGame = useGameStore((s) => s.startGame)
-  const { isSupported: speechSupported } = useSpeech()
+  const language = getLanguage()
+  const Notice = HOME_NOTICES[language.homeNotice]
+  const labels = language.labels
+  const { isSupported: speechSupported } = useSpeech(language.speechLang)
 
   const students = useSessionStore((s) => s.students)
   const questionsPerTurn = useSessionStore((s) => s.questionsPerTurn)
@@ -32,7 +42,7 @@ export function HomeScreen() {
   const [selectedDifficulty, setSelectedDifficulty] = useState<Difficulty | null>(null)
   const [selectedCategories, setSelectedCategories] = useState<string[]>([])
   // Some ao fechar e volta na próxima visita (não é persistido).
-  const [showWhatsNew, setShowWhatsNew] = useState(true)
+  const [showNotice, setShowNotice] = useState(true)
 
   const isSpeakAndSpell = selectedMode === 'falar-soletrar'
   const hasGameOptions =
@@ -76,31 +86,35 @@ export function HomeScreen() {
 
       <div className="mx-auto w-full max-w-2xl rounded-[28px] border border-brand-blue/10 bg-white p-6 shadow-[0_20px_50px_rgba(11,58,130,0.12)] sm:p-9">
         <div className="flex flex-col items-center gap-3">
-          <img src={logoJogo} alt="Jogo de Soletrar" className="w-full max-w-[380px]" />
+          {language.logo ? (
+            <img src={language.logo.src} alt={language.logo.alt} className="w-full max-w-[380px]" />
+          ) : (
+            <h2 className="text-5xl font-extrabold tracking-tight text-brand-blueDark sm:text-6xl">{language.appName}</h2>
+          )}
           <RecordBadge value={highScore} playerName={playerName} />
         </div>
 
         <div className="mt-6 flex flex-col gap-2">
-          <span className="text-sm font-semibold text-brand-textMain">Como você quer jogar?</span>
+          <span className="text-sm font-semibold text-brand-textMain">{labels.howToPlayQuestion}</span>
           <div className="flex flex-col gap-2 sm:flex-row">
             <OptionButton
               selected={playMode === 'individual'}
               onClick={() => setPlayMode('individual')}
               icon={<UserIcon />}
-              label="Jogar Individual"
+              label={labels.playSolo}
               selectedClassName={MODE_SELECTED_CLASS}
             />
             <OptionButton
               selected={playMode === 'turma'}
               onClick={() => setPlayMode('turma')}
               icon={<UsersIcon />}
-              label="Jogar com a Turma"
+              label={labels.playWithClass}
               selectedClassName={MODE_SELECTED_CLASS}
             />
           </div>
         </div>
 
-        {playMode !== null && showWhatsNew && <WhatsNewNotice onClose={() => setShowWhatsNew(false)} />}
+        {playMode !== null && showNotice && <Notice onClose={() => setShowNotice(false)} />}
 
         {playMode === 'individual' && (
           <>
@@ -110,14 +124,14 @@ export function HomeScreen() {
                 className="flex items-center gap-2 text-sm font-semibold text-brand-textMain"
               >
                 <UserIcon className="h-5 w-5 text-brand-blue" />
-                Nome do jogador
+                {labels.playerName}
               </label>
               <input
                 id="player-name"
                 type="text"
                 value={playerName}
                 onChange={(e) => setPlayerName(e.target.value)}
-                placeholder="Digite seu nome"
+                placeholder={labels.playerNamePlaceholder}
                 className="h-14 rounded-2xl border border-brand-blue/30 bg-white px-4 text-base focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
               />
             </div>
@@ -149,7 +163,7 @@ export function HomeScreen() {
               className="mt-8 flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-brand-blueDark text-lg font-bold text-white shadow-[0_10px_30px_rgba(11,58,130,0.35)] transition hover:bg-brand-blue disabled:opacity-50"
             >
               <PlayIcon />
-              Iniciar Jogo
+              {labels.startGame}
             </button>
           </>
         )}
@@ -162,7 +176,7 @@ export function HomeScreen() {
                 className="flex items-center gap-2 text-sm font-semibold text-brand-textMain"
               >
                 <UsersIcon className="h-5 w-5 text-brand-blue" />
-                Alunos
+                {labels.students}
               </label>
               <form
                 className="flex gap-2"
@@ -176,14 +190,14 @@ export function HomeScreen() {
                   type="text"
                   value={studentNameInput}
                   onChange={(e) => setStudentNameInput(e.target.value)}
-                  placeholder="Nome do aluno"
+                  placeholder={labels.studentNamePlaceholder}
                   className="h-14 flex-1 rounded-2xl border border-brand-blue/30 bg-white px-4 text-base focus:border-brand-blue focus:outline-none focus:ring-2 focus:ring-brand-blue/30"
                 />
                 <button
                   type="submit"
                   className="rounded-2xl border border-brand-blue/30 px-4 font-semibold text-brand-blueDark hover:bg-brand-grayLight"
                 >
-                  Adicionar
+                  {labels.add}
                 </button>
               </form>
               {students.length > 0 && (
@@ -197,7 +211,7 @@ export function HomeScreen() {
                       <button
                         type="button"
                         onClick={() => removeStudent(student.id)}
-                        aria-label={`Remover ${student.name}`}
+                        aria-label={labels.removeStudent(student.name)}
                         className="text-brand-blueDark/70 hover:text-brand-blueDark"
                       >
                         ×
@@ -210,7 +224,7 @@ export function HomeScreen() {
 
             <div className="mt-6 flex flex-col gap-2">
               <label htmlFor="questions-per-turn" className="text-sm font-semibold text-brand-textMain">
-                Perguntas por rodada
+                {labels.questionsPerTurn}
               </label>
               <input
                 id="questions-per-turn"
@@ -239,7 +253,7 @@ export function HomeScreen() {
               className="mt-8 flex h-16 w-full items-center justify-center gap-2 rounded-2xl bg-brand-blueDark text-lg font-bold text-white shadow-[0_10px_30px_rgba(11,58,130,0.35)] transition hover:bg-brand-blue disabled:opacity-50"
             >
               <PlayIcon />
-              Iniciar Sessão
+              {labels.startSession}
             </button>
           </>
         )}
